@@ -7,18 +7,22 @@ BALLER = no 			# Enable to ball out
 BALLSTEP = 20  			# Multiple in px to move, multiplied by layer number
 SCROLLSTEP = 1 			# Lines to scroll with ball
 MOUSEKEY_ENABLE = yes  		# Mouse keys, needed for baller
+OLED_DRIVER_ENABLE = yes
+WPM_ENABLE = yes
+CODE_RAIN = yes
 
 #Debug options
-VERBOSE 		 = yes
+VERBOSE 		 = no
 DEBUG_MATRIX_SCAN_RATE   = no
 DEBUG_BALLER 		 = no
-DEBUG_MATRIX		 = yes
+DEBUG_MATRIX		 = no
+
+LINK_TIME_OPTIMIZATION_ENABLE = yes
 
 # A bunch of stuff that you shouldn't touch unless you
 # know what you're doing.
 #
 # No touchy, capiche?
-SRC += matrix.c i2c_master.c
 ifneq ($(strip $(BALLSTEP)),)
     OPT_DEFS += -DTRKSTEP=$(strip $(BALLSTEP))
 endif
