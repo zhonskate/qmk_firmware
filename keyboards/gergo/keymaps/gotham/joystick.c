@@ -1,9 +1,6 @@
-#include "pins_arduino.h"
+#include <print.h>
 #include "pointing_device.h"
 #include "LUFA/Drivers/Peripheral/ADC.h"
-#ifdef OLED_DRIVER_ENABLE
-#include "oled.c"
-#endif
 
 #define STICK_MAX_X 820
 #define STICK_MAX_Y 850
@@ -19,9 +16,18 @@ int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t 
   return out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min);
 }
 
+static uint16_t raw_x = 0;
+static uint16_t raw_y = 0;
+static uint16_t last_x = 0;
+static uint16_t last_y = 0;
+
 static int16_t thumbstick_read(uint32_t chanmask, uint16_t high, uint16_t low, uint16_t center, uint8_t deadzone)
 {
   uint16_t analogValue = ADC_GetChannelReading(ADC_REFERENCE_AVCC | chanmask);
+  if (chanmask == ADC_CHANNEL11)
+    raw_x = analogValue;
+  else
+    raw_y = analogValue;
 
   // If the current value is too clone to the deadzone, do not move the mouse.
 //   if (abs((int)analogValue - center) <= deadzone)
@@ -61,19 +67,22 @@ void init_thumbstick(void) {
 
 void process_thumbstick(void)
 {
-  int8_t x = thumbstick_read_x();
+//   int8_t x = thumbstick_read_x();
 //   int8_t y = thumbstick_read_y();
-  #ifdef OLED_DRIVER_ENABLE
-  t_x = x;
-//   t_y = y;
-  #endif
+  thumbstick_read_x();
+  thumbstick_read_y();
+  if ((last_x != raw_x) || (last_y != raw_y)) {
+      last_x = raw_x;
+      last_y = raw_y;
+      uprintf("X: %u; Y: %u\n", raw_x, raw_y);
+  }
 
 //   if (x || y) {
-//       report_mouse_t currentReport = pointing_device_get_report();
-//       currentReport.x = -x; // mounted left-side right
-//       currentReport.y = y;
-//       currentReport.v = 0;
-//       currentReport.h = 0;
-//       pointing_device_set_report(currentReport);
+    //   report_mouse_t currentReport = pointing_device_get_report();
+    //   currentReport.x = -x; // mounted left-side right
+    //   currentReport.y = y;
+    //   currentReport.v = 0;
+    //   currentReport.h = 0;
+    //   pointing_device_set_report(currentReport);
 //   }
 }

@@ -9,7 +9,7 @@ SCROLLSTEP = 1 			# Lines to scroll with ball
 MOUSEKEY_ENABLE = yes  		# Mouse keys, needed for baller
 OLED_DRIVER_ENABLE = yes
 WPM_ENABLE = yes
-CODE_RAIN = yes
+JOYSTICK = yes
 
 #Debug options
 VERBOSE 		 = no
@@ -38,4 +38,7 @@ ifeq ($(strip $(DEBUG_BALLER)), yes)
 endif
 ifeq ($(strip $(DEBUG_MATRIX)), yes)
     OPT_DEFS += -DDEBUG_MATRIX
+endif
+ifeq ($(strip $(JOYSTICK)), yes)
+    OPT_DEFS += -DJOYSTICK
 endif
