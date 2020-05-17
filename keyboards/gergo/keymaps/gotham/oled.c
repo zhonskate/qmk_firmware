@@ -4,6 +4,7 @@
 
 static uint32_t oled_timer_elapsed = 0;
 static uint32_t oled_timer = 0;
+static bool oled_enabled = false;
 
 // #define CODE_RAIN
 
@@ -223,11 +224,20 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     return OLED_ROTATION_90;
 }
 
+void toggle_oled_mode(void) {
+    oled_enabled = !oled_enabled;
+}
+
 void oled_task_user(void) {
-    oled_timer_elapsed = timer_elapsed32(oled_timer);
-    if (oled_timer_elapsed  > 10000) {
-        oled_off();
+    if (oled_enabled) {
+        oled_timer_elapsed = timer_elapsed32(oled_timer);
+        if (oled_timer_elapsed > 10000) {
+            oled_off();
+        } else {
+            render_status_main();
+        }
     } else {
-        render_status_main();
+        oled_off();
     }
 }
+// todo oled write raw byte
