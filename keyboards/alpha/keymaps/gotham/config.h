@@ -1,4 +1,5 @@
 #ifdef RGB_DI_PIN
+#undef RGBLED_NUM
 #define RGBLED_NUM 10
 #endif
 
