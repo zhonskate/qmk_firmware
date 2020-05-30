@@ -15,10 +15,14 @@ enum layers {
     MOUS,  // mouse navigation
 };
 
-enum custom_keycodes { KC_OLED = SAFE_RANGE };
+enum custom_keycodes { KC_OLED = SAFE_RANGE, TMB_MODE };
 
 #ifdef OLED_DRIVER_ENABLE
 #    include "oled.c"
+#endif
+
+#ifdef THUMBSTICK_ENABLE
+#    include "thumbstick.h"
 #endif
 
 #define KC_ANGL LSFT(KC_COMM)
@@ -27,6 +31,7 @@ enum custom_keycodes { KC_OLED = SAFE_RANGE };
 
 // Blank template at the bottom
 
+// clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /* Keymap 0: Basic layer
      *
@@ -50,9 +55,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
 [BASE] = LAYOUT_gergo(
     KC_ESC,  KC_Q,  KC_W,   KC_E,   KC_R, KC_T,                                          KC_Y, KC_U, KC_I,    KC_O,   KC_P,    KC_BSLS,
-    KC_LSFT, KC_A,  KC_S,   KC_D,   KC_F, KC_G, XXXXXXX,                       XXXXXXX,  KC_H, KC_J, KC_K,    KC_L,   KC_SCLN, MT(MOD_RSFT, KC_QUOT),
+    KC_LSFT, KC_A,  KC_S,   KC_D,   KC_F, KC_G, XXXXXXX,                      TMB_MODE,  KC_H, KC_J, KC_K,    KC_L,   KC_SCLN, MT(MOD_RSFT, KC_QUOT),
     KC_LCTL, KC_Z,  KC_X,   KC_C,   KC_V, KC_B, XXXXXXX,  ALT_TAB,    ALT_TAB, XXXXXXX,  KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, MT(MOD_RCTL, KC_MINS),
-             KC_LALT, LT(SYMB, KC_SPC), LT(NUMB, KC_TAB), KC_LGUI,    KC_EQL, LT(SYMB, KC_ENT), LT(NUMB, KC_BSPC), MO(MOUS)
+             KC_LALT, LT(SYMB, KC_SPC), LT(NUMB, KC_TAB), KC_LGUI,    KC_EQL, LT(SYMB, KC_ENT), LT(NUMB, KC_BSPC), LT(MOUS, KC_DEL)
     ),
     /* Keymap 1: Symbols layer
      *
@@ -160,6 +165,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     )
  */
+// clang-format on
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #ifdef OLED_DRIVER_ENABLE
@@ -172,5 +178,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
     }
 #endif
+    switch (keycode) {
+#ifdef THUMBSTICK_ENABLE
+        case TMB_MODE:
+            if (record->event.pressed) {
+                thumbstick_mode_cycle(false);
+            }
+            break;
+#endif
+        default:
+            break;
+    }
     return true;
 }

@@ -8,14 +8,16 @@ BALLSTEP = 20  			# Multiple in px to move, multiplied by layer number
 SCROLLSTEP = 1 			# Lines to scroll with ball
 MOUSEKEY_ENABLE = yes  		# Mouse keys, needed for baller
 OLED_DRIVER_ENABLE = yes
-DEBOUNCE_TYPE  = eager_pk
-JSTICK = yes
+THUMBSTICK_ENABLE = no
 
-#Debug options
+COMMAND_ENABLE		= no
+BOOTMAGIC_ENABLE = no
+
+# Debug options
 VERBOSE 		 = no
 DEBUG_MATRIX_SCAN_RATE   = no
 DEBUG_BALLER 		 = no
-DEBUG_MATRIX		 = no
+DEBUG_MATRIX		 = yes
 
 LINK_TIME_OPTIMIZATION_ENABLE = yes
 
@@ -39,7 +41,9 @@ endif
 ifeq ($(strip $(DEBUG_MATRIX)), yes)
     OPT_DEFS += -DDEBUG_MATRIX
 endif
-ifeq ($(strip $JSTICK)), yes)
-    OPT_DEFS += -JSTICK
-	SRC += joystick.c
+ifeq ($(strip $(THUMBSTICK_ENABLE)), yes)
+    POINTING_DEVICE_ENABLE = yes
+    OPT_DEFS += -DTHUMBSTICK_ENABLE
+	SRC += analog.c
+	SRC += thumbstick.c
 endif
