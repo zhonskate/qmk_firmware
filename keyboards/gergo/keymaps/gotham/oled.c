@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 static uint16_t oled_timer_elapsed = 0;
-static uint16_t oled_timer = 0;
-static bool oled_enabled = false;
+static uint16_t oled_timer         = 0;
+static bool     oled_enabled       = false;
 
 #ifdef WPM_ENABLE
 static uint8_t wpm = 0;
@@ -151,10 +151,10 @@ void render_wpm(void) {
 
 void render_mod_status(void) {
     // 2x1 Ctrl, Alt, Shift, GUI, Mouse
-    static const char PROGMEM font_ctrl[3] = {0x99, 0x9a, 0};
-    static const char PROGMEM font_alt[3] = {0xb9, 0xba, 0};
+    static const char PROGMEM font_ctrl[3]  = {0x99, 0x9a, 0};
+    static const char PROGMEM font_alt[3]   = {0xb9, 0xba, 0};
     static const char PROGMEM font_shift[3] = {0xbb, 0xbc, 0};
-    static const char PROGMEM font_gui[3] = {0x9b, 0x9c, 0};
+    static const char PROGMEM font_gui[3]   = {0x9b, 0x9c, 0};
 #ifdef NO_ACTION_ONESHOT
     uint8_t modifiers = get_mods();
 #else
@@ -200,13 +200,9 @@ void render_status_main(void) {
     render_mod_status();
 }
 
-oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-    return OLED_ROTATION_90;
-}
+oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_90; }
 
-void toggle_oled_mode(void) {
-    oled_enabled = !oled_enabled;
-}
+void toggle_oled_mode(void) { oled_enabled = !oled_enabled; }
 
 void oled_task_user(void) {
     if (oled_enabled) {
