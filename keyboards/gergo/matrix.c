@@ -28,10 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "debounce.h"
 #include QMK_KEYBOARD_H
 
-#ifdef JOYSTICK
-#include "keyboards/gergo/keymaps/gotham/joystick.c"
-#endif
-
 #ifdef BALLER
 #include <avr/interrupt.h>
 #include "pointing_device.h"
@@ -157,9 +153,6 @@ void matrix_init(void) {
   }
 
     debounce_init(MATRIX_ROWS);
-#ifdef JOYSTICK
-    init_thumbstick();
-#endif
     matrix_init_quantum();
 }
 
@@ -267,9 +260,6 @@ uint8_t matrix_scan(void) {
     }
 
     debounce(raw_matrix, matrix, MATRIX_ROWS, changed);
-#ifdef JOYSTICK
-    process_thumbstick();
-#endif
     matrix_scan_quantum();
 
     enableInterrupts();

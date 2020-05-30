@@ -2,17 +2,9 @@
 
 #include <stdio.h>
 
-static uint32_t oled_timer_elapsed = 0;
-static uint32_t oled_timer = 0;
+static uint16_t oled_timer_elapsed = 0;
+static uint16_t oled_timer = 0;
 static bool oled_enabled = false;
-
-// #define CODE_RAIN
-
-#ifdef CODE_RAIN
-#   define RAIN_STRING_LENGTH 10
-static char rain_str[RAIN_STRING_LENGTH + 1] = {' '}; // init to spaces
-static const char rain_chars[] = "abcdefghikjklmnopqrstuvwxyz1234567890!@^#$(){}[]`~-_<&|>+,*./;|日ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍｦｲｸｺｿﾁﾄﾉﾌﾔﾖﾙﾚﾛﾝｲｸﾁﾄﾉﾌﾍﾖﾙﾚﾛﾝ";
-#endif
 
 #ifdef WPM_ENABLE
 static uint8_t wpm = 0;
@@ -99,7 +91,7 @@ void render_sine1(void) {
         {0x94, 0x95, 0x96, 0x97, 0x98, 0x00},
         {0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0x00},
     };
-    uint32_t frame = timer_read32() % 500 / 100;
+    uint16_t frame = timer_read() % 500 / 100;
     oled_write_P(font_logo[frame], false);
 };
 
@@ -111,7 +103,7 @@ void render_sine2(void) {
         {0xaa, 0xab, 0xac, 0xad, 0xae, 0x00},
         {0xca, 0xcb, 0xcc, 0xcd, 0xce, 0x00},
     };
-    uint32_t frame = timer_read32() % 500 / 100;
+    uint16_t frame = timer_read() % 500 / 100;
     oled_write_P(font_logo[frame], false);
 };
 
@@ -122,7 +114,7 @@ void render_sine3(void) {
         {0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0x00},
         {0x85, 0x86, 0x87, 0x88, 0x89, 0x00},
     };
-    uint32_t frame = timer_read32() % 300 / 75;
+    uint16_t frame = timer_read() % 300 / 75;
     oled_write_P(font_logo[frame], false);
 };
 
@@ -153,18 +145,6 @@ void render_wpm(void) {
     snprintf(wpm_str, sizeof(wpm_str), "WPM:\n%5u", wpm);
     oled_write_ln(wpm_str, false);
 };
-#endif
-
-#ifdef CODE_RAIN
-void render_code_rain(void) {
-    oled_write(rain_str, false);
-    for(uint8_t i = (RAIN_STRING_LENGTH - 1); i > 0; i--) {
-        rain_str[i] = rain_str[i - 1];
-    }
-    for(uint8_t i = 0; i < 1; ++i) {
-        rain_str[i] = rain_chars[rand() % 123];
-    }
-}
 #endif
 
 // 5x2 Mod and feature indicator clusters
