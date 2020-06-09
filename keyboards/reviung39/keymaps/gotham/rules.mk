@@ -1,7 +1,26 @@
-BOOTLOADER = atmel-dfu
+BOOTLOADER      = atmel-dfu
+AUDIO_ENABLE    = yes
+EXTRAKEY_ENABLE = yes
+RGBLIGHT_ENABLE = yes
+LTO_ENABLE      = yes
 
-EXTRAKEY_ENABLE = yes		# Audio control and System control
-CONSOLE_ENABLE = no			# Console for debug
-COMMAND_ENABLE = no			# Commands for debug and configuration
-RGBLIGHT_ENABLE = yes		# Enable keyboard RGB underglow
-AUDIO_ENABLE = yes			# Audio output on port C6
+# Reduce firmware size
+BOOTMAGIC_ENABLE  = no
+MOUSEKEY_ENABLE   = no
+CONSOLE_ENABLE    = no
+COMMAND_ENABLE    = no
+COMBO_ENABLE      = no
+NKRO_ENABLE       = no
+LEADER_ENABLE     = no
+MIDI_ENABLE       = no
+UNICODE_ENABLE    = no
+UNICODEMAP_ENABLE = no
+UCIS_ENABLE       = no
+BLUETOOTH         = no
+BLUETOOTH_ENABLE  = no
+SPLIT_KEYBOARD    = no
+SLEEP_LED_ENABLE  = no
+BACKLIGHT_ENABLE  = no
+FAUXCLICKY_ENABLE = no
+API_SYSEX_ENABLE  = no
+KEY_LOCK_ENABLE   = no
