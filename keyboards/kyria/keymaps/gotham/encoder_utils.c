@@ -92,3 +92,17 @@ void encoder_action(encoder_mode_t mode, uint8_t clockwise) {
             encoder_action_volume(clockwise);
     }
 }
+
+void encoder_update_user(uint8_t index, bool clockwise) {
+    if (index == 0) {
+        encoder_action(get_encoder_mode(true), clockwise);
+#ifdef OLED_DRIVER_ENABLE
+        oled_on();
+#endif
+    } else if (index == 1) {
+        encoder_action(get_encoder_mode(false), clockwise);
+#ifdef OLED_DRIVER_ENABLE
+        oled_on();
+#endif
+    }
+}

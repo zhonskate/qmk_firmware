@@ -10,7 +10,7 @@
 #    include "thumbstick.h"
 #endif
 
-void render_kyria_logo(void);
+void render_qmk_logo(void);
 
 void render_layer(void);
 
