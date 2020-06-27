@@ -41,6 +41,10 @@ int16_t thumbstick_get_component(uint8_t pin) {
     return directionIsPositive ? distance : -(int16_t)distance;
 }
 
+thumbstick_vector_t thumbstick_vector_get(void) { return thumbstick_state.vector; }
+
+void thumbstick_vector_set(thumbstick_vector_t vector) { thumbstick_state.vector = vector; }
+
 void thumbstick_mode_set(thumbstick_mode_t mode) { thumbstick_state.config.mode = mode; }
 
 thumbstick_mode_t thumbstick_mode_get(void) { return thumbstick_state.config.mode; }
@@ -96,8 +100,7 @@ thumbstick_direction_t thumbstick_get_discretized_direction(thumbstick_vector_t 
     return direction;
 }
 
-thumbstick_direction_t scrollDirection;  // Declaring global to save stack space
-void                   thumbstick_process(void) {
+void thumbstick_read_vectors(void) {
     if (timer_elapsed(thumbstickTimer) > THUMBSTICK_TIMEOUT) {
         thumbstickTimer = timer_read();
 #ifndef THUMBSTICK_FLIP_X
@@ -110,27 +113,71 @@ void                   thumbstick_process(void) {
 #else
         thumbstick_state.vector.y = -thumbstick_get_component(THUMBSTICK_PIN_Y);
 #endif
-        switch (thumbstick_state.config.mode) {
-            case THUMBSTICK_MODE_MOUSE:
-                thumbstick_state.report.x = thumbstick_get_mouse_speed(thumbstick_state.vector.x);
-                thumbstick_state.report.y = thumbstick_get_mouse_speed(thumbstick_state.vector.y);
-                break;
-            case THUMBSTICK_MODE_ARROWS:
-                thumbstick_state.direction = thumbstick_get_discretized_direction(thumbstick_state.vector, thumbstick_state.config.axisSeparation, thumbstick_state.config.eightAxis);
-                break;
-            case THUMBSTICK_MODE_SCROLL:
-                if (timer_elapsed(thumbstickScrollTimer) > THUMBSTICK_SCROLL_TIMEOUT) {
-                    thumbstickScrollTimer     = timer_read();
-                    scrollDirection           = thumbstick_get_discretized_direction(thumbstick_state.vector, thumbstick_state.config.axisSeparation, false);
-                    thumbstick_state.report.v = (scrollDirection.up || scrollDirection.down) ? (scrollDirection.up ? THUMBSTICK_SCROLL_SPEED : -THUMBSTICK_SCROLL_SPEED) : 0;
-                    thumbstick_state.report.h = (scrollDirection.left || scrollDirection.right) ? (scrollDirection.left ? -THUMBSTICK_SCROLL_SPEED : THUMBSTICK_SCROLL_SPEED) : 0;
-                } else {
-                    thumbstick_state.report.v = thumbstick_state.report.h = 0;
-                }
-                break;
-            default:
-                break;
-        }
+    }
+}
+
+thumbstick_direction_t scrollDirection;  // Declaring global to save stack space
+void                   thumbstick_calculate_state(void) {
+    switch (thumbstick_state.config.mode) {
+        case THUMBSTICK_MODE_MOUSE:
+            thumbstick_state.report.x = thumbstick_get_mouse_speed(thumbstick_state.vector.x);
+            thumbstick_state.report.y = thumbstick_get_mouse_speed(thumbstick_state.vector.y);
+            break;
+        case THUMBSTICK_MODE_ARROWS:
+            thumbstick_state.direction = thumbstick_get_discretized_direction(thumbstick_state.vector, thumbstick_state.config.axisSeparation, thumbstick_state.config.eightAxis);
+            break;
+        case THUMBSTICK_MODE_SCROLL:
+            if (timer_elapsed(thumbstickScrollTimer) > THUMBSTICK_SCROLL_TIMEOUT) {
+                thumbstickScrollTimer     = timer_read();
+                scrollDirection           = thumbstick_get_discretized_direction(thumbstick_state.vector, thumbstick_state.config.axisSeparation, false);
+                thumbstick_state.report.v = (scrollDirection.up || scrollDirection.down) ? (scrollDirection.up ? THUMBSTICK_SCROLL_SPEED : -THUMBSTICK_SCROLL_SPEED) : 0;
+                thumbstick_state.report.h = (scrollDirection.left || scrollDirection.right) ? (scrollDirection.left ? -THUMBSTICK_SCROLL_SPEED : THUMBSTICK_SCROLL_SPEED) : 0;
+            } else {
+                thumbstick_state.report.v = thumbstick_state.report.h = 0;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+void thumbstick_process_state(report_mouse_t* report) {
+    switch (thumbstick_state.config.mode) {
+        case THUMBSTICK_MODE_MOUSE:
+            report->x = thumbstick_state.report.x;
+            report->y = thumbstick_state.report.y;
+#ifdef THUMBSTICK_DEBUG
+            if (timer_elapsed(thumbstickLogTimer) > 100) {
+                thumbstickLogTimer = timer_read();
+                uprintf("Raw (%d, %d); Dist (%u, %u); Vec (%d, %d);\n", rawX, rawY, distX, distY, thumbstick_state.vector.x, thumbstick_state.vector.y);
+            }
+#endif
+            break;
+        case THUMBSTICK_MODE_ARROWS:
+            update_keycode_status(KC_UP, thumbstick_state.lastDirection.up, thumbstick_state.direction.up);
+            update_keycode_status(KC_DOWN, thumbstick_state.lastDirection.down, thumbstick_state.direction.down);
+            update_keycode_status(KC_LEFT, thumbstick_state.lastDirection.left, thumbstick_state.direction.left);
+            update_keycode_status(KC_RIGHT, thumbstick_state.lastDirection.right, thumbstick_state.direction.right);
+            thumbstick_state.lastDirection = thumbstick_state.direction;
+#ifdef THUMBSTICK_DEBUG
+            if (timer_elapsed(thumbstickLogTimer) > 100) {
+                thumbstickLogTimer = timer_read();
+                uprintf("Up %d; Down %d; Left: %d; Right %d; Vec (%d, %d);\n", direction.up, direction.down, direction.left, direction.right, thumbstick_state.vector.x, thumbstick_state.vector.y);
+            }
+#endif
+            break;
+        case THUMBSTICK_MODE_SCROLL:
+            report->v = thumbstick_state.report.v;
+            report->h = thumbstick_state.report.h;
+#ifdef THUMBSTICK_DEBUG
+            if (timer_elapsed(thumbstickLogTimer) > 100) {
+                thumbstickLogTimer = timer_read();
+                uprintf("Scroll (%d, %d)\n", report.h, report.v);
+            }
+#endif
+            break;
+        default:
+            break;
     }
 }
 
@@ -149,46 +196,13 @@ void pointing_device_init(void) { thumbstick_init(); }
 void pointing_device_task(void) {
     report_mouse_t report = pointing_device_get_report();
 
+    // Only read pins on the right half where the thunmbstick is attached, and set state
     if (!isLeftHand) {
-        thumbstick_process();
-        switch (thumbstick_state.config.mode) {
-            case THUMBSTICK_MODE_MOUSE:
-                report.x = thumbstick_state.report.x;
-                report.y = thumbstick_state.report.y;
-#ifdef THUMBSTICK_DEBUG
-                if (timer_elapsed(thumbstickLogTimer) > 100) {
-                    thumbstickLogTimer = timer_read();
-                    uprintf("Raw (%d, %d); Dist (%u, %u); Vec (%d, %d);\n", rawX, rawY, distX, distY, thumbstick_state.vector.x, thumbstick_state.vector.y);
-                }
-#endif
-                break;
-            case THUMBSTICK_MODE_ARROWS:
-                update_keycode_status(KC_UP, thumbstick_state.lastDirection.up, thumbstick_state.direction.up);
-                update_keycode_status(KC_DOWN, thumbstick_state.lastDirection.down, thumbstick_state.direction.down);
-                update_keycode_status(KC_LEFT, thumbstick_state.lastDirection.left, thumbstick_state.direction.left);
-                update_keycode_status(KC_RIGHT, thumbstick_state.lastDirection.right, thumbstick_state.direction.right);
-                thumbstick_state.lastDirection = thumbstick_state.direction;
-#ifdef THUMBSTICK_DEBUG
-                if (timer_elapsed(thumbstickLogTimer) > 100) {
-                    thumbstickLogTimer = timer_read();
-                    uprintf("Up %d; Down %d; Left: %d; Right %d; Vec (%d, %d);\n", direction.up, direction.down, direction.left, direction.right, thumbstick_state.vector.x, thumbstick_state.vector.y);
-                }
-#endif
-                break;
-            case THUMBSTICK_MODE_SCROLL:
-                report.v = thumbstick_state.report.v;
-                report.h = thumbstick_state.report.h;
-#ifdef THUMBSTICK_DEBUG
-                if (timer_elapsed(thumbstickLogTimer) > 100) {
-                    thumbstickLogTimer = timer_read();
-                    uprintf("Scroll (%d, %d)\n", report.h, report.v);
-                }
-#endif
-                break;
-            default:
-                break;
-        }
+        thumbstick_read_vectors();
     }
+    // Calculate and process thumbstick state (if master half doesn't have the thumbstick, the custom transport will bring the vectors over)
+    thumbstick_calculate_state();
+    thumbstick_process_state(&report);
 
     pointing_device_set_report(report);
     pointing_device_send();

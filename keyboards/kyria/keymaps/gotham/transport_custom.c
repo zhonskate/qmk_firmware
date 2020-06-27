@@ -19,6 +19,11 @@
 #    include "encoder.h"
 static pin_t encoders_pad[] = ENCODERS_PAD_A;
 #    define NUMBER_OF_ENCODERS (sizeof(encoders_pad) / sizeof(pin_t))
+#    include "encoder_utils.h"
+#endif
+
+#ifdef THUMBSTICK_ENABLE
+#    include "thumbstick.h"
 #endif
 
 #if defined(USE_I2C)
@@ -130,20 +135,33 @@ void transport_slave_init(void) { i2c_slave_init(SLAVE_I2C_ADDRESS); }
 
 typedef struct _Serial_s2m_buffer_t {
     // TODO: if MATRIX_COLS > 8 change to uint8_t packed_matrix[] for pack/unpack
-    matrix_row_t smatrix[ROWS_PER_HAND];
+    matrix_row_t                 smatrix[ROWS_PER_HAND];
 
 #    ifdef ENCODER_ENABLE
-    uint8_t      encoder_state[NUMBER_OF_ENCODERS];
+    uint8_t                      encoder_state[NUMBER_OF_ENCODERS];
+#    endif
+
+#    ifdef THUMBSTICK_ENABLE
+    thumbstick_transport_state_t thumbstick_state;
 #    endif
 
 } Serial_s2m_buffer_t;
 
 typedef struct _Serial_m2s_buffer_t {
 #    ifdef BACKLIGHT_ENABLE
-    uint8_t backlight_level;
+    uint8_t                      backlight_level;
 #    endif
 #    ifdef WPM_ENABLE
-    uint8_t current_wpm;
+    uint8_t                      current_wpm;
+#    endif
+#    ifdef ENCODER_ENABLE
+    uint8_t                      encoder_state[NUMBER_OF_ENCODERS];
+    encoder_mode_t               encoder_left_mode;
+    encoder_mode_t               encoder_right_mode;
+#    endif
+
+#    ifdef THUMBSTICK_ENABLE
+    thumbstick_transport_state_t thumbstick_state;
 #    endif
 } Serial_m2s_buffer_t;
 
@@ -245,6 +263,18 @@ bool transport_master(matrix_row_t matrix[]) {
 
 #    ifdef ENCODER_ENABLE
     encoder_update_raw((uint8_t *)serial_s2m_buffer.encoder_state);
+    serial_m2s_buffer.encoder_left_mode  = get_encoder_mode(true);
+    serial_m2s_buffer.encoder_right_mode = get_encoder_mode(false);
+#    endif
+
+#    ifdef THUMBSTICK_ENABLE
+    if (isLeftHand) {
+        serial_m2s_buffer.thumbstick_state.mode = thumbstick_mode_get();
+        thumbstick_vector_set(serial_s2m_buffer.thumbstick_state.vector);
+    } else {
+        serial_m2s_buffer.thumbstick_state.mode   = thumbstick_mode_get();
+        serial_m2s_buffer.thumbstick_state.vector = thumbstick_vector_get();
+    }
 #    endif
 
 #    ifdef WPM_ENABLE
@@ -266,6 +296,18 @@ void transport_slave(matrix_row_t matrix[]) {
 
 #    ifdef ENCODER_ENABLE
     encoder_state_raw((uint8_t *)serial_s2m_buffer.encoder_state);
+    set_encoder_mode(false, serial_m2s_buffer.encoder_right_mode);
+    set_encoder_mode(true, serial_m2s_buffer.encoder_left_mode);
+#    endif
+
+#    ifdef THUMBSTICK_ENABLE
+    if (isLeftHand) {
+        thumbstick_mode_set(serial_m2s_buffer.thumbstick_state.mode);
+        thumbstick_vector_set(serial_m2s_buffer.thumbstick_state.vector);
+    } else {
+        thumbstick_mode_set(serial_m2s_buffer.thumbstick_state.mode);
+        serial_s2m_buffer.thumbstick_state.vector = thumbstick_vector_get();
+    }
 #    endif
 
 #    ifdef WPM_ENABLE

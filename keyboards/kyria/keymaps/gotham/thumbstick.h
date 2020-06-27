@@ -71,10 +71,20 @@ typedef struct {
     report_mouse_t         report;
 } thumbstick_state_t;
 
+// Just enough information for split transport
+typedef struct {
+    thumbstick_mode_t   mode;
+    thumbstick_vector_t vector;
+} thumbstick_transport_state_t;
+
 uint16_t thumbstickTimer;
 uint16_t thumbstickScrollTimer;
 
 thumbstick_state_t thumbstick_state;
+
+void thumbstick_vector_set(thumbstick_vector_t vector);
+
+thumbstick_vector_t thumbstick_vector_get(void);
 
 void thumbstick_mode_set(thumbstick_mode_t mode);
 
@@ -93,6 +103,13 @@ int16_t thumbstick_get_mouse_speed(int16_t component);
 // Fix direction within one of 8 axes (or 4 if 8-axis is disabled)
 thumbstick_direction_t thumbstick_get_discretized_direction(thumbstick_vector_t vector, float axisSeparation, bool eightAxis);
 
-void thumbstick_process(void);
+// Read analog values into vectors
+void thumbstick_read_vectors(void);
+
+// Calculate various state values based on vectors
+void thumbstick_calculate_state(void);
+
+// Perform actions based on state
+void thumbstick_process_state(report_mouse_t*);
 
 void update_keycode_status(uint16_t keycode, bool last, bool current);
