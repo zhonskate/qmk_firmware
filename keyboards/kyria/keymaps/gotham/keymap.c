@@ -39,15 +39,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       ESC_RAISE,    KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                       KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,     BSLS_RAISE,
       KC_LSFT,      KC_A,   KC_S,   KC_D,   KC_F,   KC_G,                                       KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN,  SFT_QUOT,
       KC_LCTL,      KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,  KC_LGUI,  KC_NO,  TMB_MODE,  KC_NO,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,  CTL_MINS,
-        ENC_MODE_L, KC_LALT, LT(_LOWER, KC_SPC), LT(_RAISE, KC_TAB), KC_LSFT,  KC_EQL, LT(_RAISE, KC_ENT), LT(_LOWER, KC_BSPC),  KC_DEL, ENC_MODE_R
+        ENC_MODE_L, KC_LALT, LT(_LOWER, KC_SPC), LT(_RAISE, KC_TAB), KC_LSFT,  KC_EQL, LT(_LOWER, KC_ENT), LT(_RAISE, KC_BSPC),  KC_DEL, ENC_MODE_R
     ),
 /*
  * Lower Layer: Symbols, Navigation
  */
     [_LOWER] = LAYOUT(
       _______, KC_HASH, KC_DLR,  KC_LCBR, KC_RCBR, KC_PIPE,                                     _______, _______, _______, _______, _______, KC_PIPE,
-      _______, KC_EXLM, KC_AT,   KC_LPRN, KC_RPRN, KC_GRV,                                      KC_PGUP, KC_LEFT, KC_UP,   KC_RGHT, _______, KC_QUOT,
-      _______, KC_PERC, KC_CIRC, KC_LBRC, KC_RBRC, KC_TILD, _______, _______, _______, _______, KC_PGDN, KC_HOME, KC_DOWN, KC_END,  _______, KC_MINS,
+      _______, KC_EXLM, KC_AT,   KC_LPRN, KC_RPRN, KC_GRV,                                      KC_AMPR, KC_PLUS, KC_ASTR, KC_SLSH, KC_PERC, KC_QUOT,
+      _______, KC_PERC, KC_CIRC, KC_LBRC, KC_RBRC, KC_TILD, _______, _______, _______, _______, KC_AMPR, KC_PIPE, KC_COMM, KC_DOT,  KC_SLSH, KC_MINS,
                                  _______, _______, _______, KC_SCLN, KC_EQL,  KC_EQL,  KC_SCLN, _______, _______, _______
     ),
 /*
@@ -55,8 +55,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   */
     [_RAISE] = LAYOUT(
       _______, KC_1, 	  KC_2,    KC_3,    KC_4,    KC_5,                                         KC_6,    KC_7, KC_8,    KC_9,    KC_0,    _______,
-      _______, _______, KC_MPRV, KC_MPLY, KC_MNXT, KC_VOLU,                                     KC_MINS, KC_PLUS, KC_ASTR, KC_SLSH, KC_PERC, _______,
-      _______, _______, _______, _______, KC_MUTE, KC_VOLD, _______, _______, _______, _______, KC_AMPR, KC_PIPE, KC_COMM, KC_DOT,  KC_SLSH, _______,
+      _______, _______, KC_MPRV, KC_MPLY, KC_MNXT, KC_VOLU,                                     KC_PGUP, KC_LEFT, KC_UP,   KC_RGHT, _______, _______,
+      _______, _______, _______, _______, KC_MUTE, KC_VOLD, _______, _______, _______, _______, KC_PGDN, KC_HOME, KC_DOWN, KC_END,  _______, _______,
                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
 /*
