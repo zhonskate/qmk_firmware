@@ -25,7 +25,7 @@ Slave-side OLED currently only displays a static content.
 
 ### Thumbstick
 
-A PSP 2000 thumbstick is attached to the right half. It will currently only function when the USB cable is connected to the right half. When I figure out how to transfer data between halves using serial link, I will make this work regardless of which side is the master.
+A PSP 2000 thumbstick is attached to the right half.
 
 #### Thumbstick Configuration
 
