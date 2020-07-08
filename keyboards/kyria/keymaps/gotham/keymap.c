@@ -120,3 +120,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     return true;
 }
+
+#ifdef ENCODER_ENABLE
+void encoder_update_user(uint8_t index, bool clockwise) {
+    if (index == 0) {
+        encoder_action(get_encoder_mode(true), clockwise);
+#    ifdef OLED_DRIVER_ENABLE
+        oled_on();
+#    endif
+    } else if (index == 1) {
+        encoder_action(get_encoder_mode(false), clockwise);
+#    ifdef OLED_DRIVER_ENABLE
+        oled_on();
+#    endif
+    }
+}
+#endif

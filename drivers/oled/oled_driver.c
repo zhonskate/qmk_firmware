@@ -645,4 +645,13 @@ void oled_task(void) {
 #endif
 }
 
+void oled_set_pixel(uint16_t x, uint16_t y, bool on) {
+    uint16_t index = x + (y / 8) * OLED_DISPLAY_WIDTH;
+    if (on) {
+        oled_buffer[index] |= (1 << (y % 8));
+    } else {
+        oled_buffer[index] &= ~(1 << (y % 8));
+    }
+    oled_dirty |= (1 << (index / OLED_BLOCK_SIZE));
+}
 __attribute__((weak)) void oled_task_user(void) {}

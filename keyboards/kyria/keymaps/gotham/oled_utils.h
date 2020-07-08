@@ -23,3 +23,9 @@ void render_thumbstick(thumbstick_mode_t mode);
 #endif
 
 void render_status(void);
+
+#ifdef STARFIELD_ENABLE
+#include <math.h>
+void render_starfield(void);
+void init_cache(void);
+#endif
