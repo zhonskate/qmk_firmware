@@ -277,3 +277,5 @@ uint8_t oled_max_chars(void);
 
 // Returns the maximum number of lines that will fit on the oled
 uint8_t oled_max_lines(void);
+
+void oled_set_pixel(uint16_t x, uint16_t y, bool on);
