@@ -25,7 +25,7 @@ void render_thumbstick(thumbstick_mode_t mode);
 void render_status(void);
 
 #ifdef STARFIELD_ENABLE
-#include <math.h>
+#include "lib/lib8tion/lib8tion.h"
 void render_starfield(void);
 void init_cache(void);
 #endif

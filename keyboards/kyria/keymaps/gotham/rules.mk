@@ -12,6 +12,7 @@ SPLIT_TRANSPORT = custom
 
 ifeq ($(strip $(STARFIELD_ENABLE)), yes)
 	OPT_DEFS += -DSTARFIELD_ENABLE
+	SRC += lib/lib8tion/lib8tion.c
 endif
 
 ifeq ($(strip $(SPLIT_TRANSPORT)), custom)
