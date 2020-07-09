@@ -117,19 +117,27 @@ void render_status(void) {
 
 #ifdef STARFIELD_ENABLE
 
+uint8_t center_x, center_y, center_target_x, center_target_y;
+
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+    center_x = OLED_DISPLAY_WIDTH/2;
+    center_y = OLED_DISPLAY_HEIGHT/2;
+    center_target_x = OLED_DISPLAY_WIDTH/2;
+    center_target_y = OLED_DISPLAY_HEIGHT/2;
     random16_set_seed(12345);
     return OLED_ROTATION_180;
 }
 
-#define CENTER_H OLED_DISPLAY_WIDTH/2
-#define CENTER_V OLED_DISPLAY_HEIGHT/2
 #define SCREEN_RATIO OLED_DISPLAY_WIDTH / OLED_DISPLAY_HEIGHT
-#define SPAWN_RANGE 16
-#define MAX_STARS 20
-#define Z_FACTOR 1.15
-#define SPAWN_DELAY 1000
-#define UPDATE_DELAY 42
+#define SPAWN_RANGE 8
+#define MAX_STARS 16
+#define Z_FACTOR 1.22
+#define SPAWN_DELAY 333
+
+#define STARFIELD_FPS 18 // More than 20 and pixels get stuck in the bottom part
+#define UPDATE_DELAY (uint8_t)(1000.0 / STARFIELD_FPS)
+
+#define CENTER_JUMP_TIMEOUT 1000
 
 uint8_t star_ang[MAX_STARS];
 uint8_t star_rad[MAX_STARS];
@@ -137,10 +145,10 @@ uint8_t star_rad[MAX_STARS];
 uint8_t n_stars = 0;
 uint16_t star_spawn_timer = 0;
 uint16_t star_update_timer = 0;
+uint16_t center_jump_timer = 0;
 
-uint16_t rand_range(uint16_t range) {
-    return rand() % range;
-}
+bool alt_frame = false;
+
 
 void spawn_star(void) {
     star_ang[n_stars] = random8();
@@ -148,18 +156,16 @@ void spawn_star(void) {
     n_stars++;
 }
 
-uint8_t get_star_x(uint8_t index) {
-    // return (uint8_t)(cos(star_ang[index]) * star_rad[index] + CENTER_H);
-    return CENTER_H + (cos8(star_ang[index]) - 128) * star_rad[index] / 128;
+int16_t get_star_x(uint8_t index) {
+    return center_x + (int16_t)(cos8(star_ang[index]) - 128) * star_rad[index] / 128;
 }
 
-uint8_t get_star_y(uint8_t index) {
-    // return (uint8_t)(sin(star_ang[index]) * star_rad[index] + CENTER_V);
-    return CENTER_V + (sin8(star_ang[index]) - 128) * star_rad[index] / 128;
+int16_t get_star_y(uint8_t index) {
+    return center_y + (int16_t)(sin8(star_ang[index]) - 128) * star_rad[index] / 128;
 }
 
-bool out_of_bounds(uint8_t index, uint8_t padding) {
-    uint8_t val = get_star_x(index);
+bool out_of_bounds(uint8_t index, int16_t padding) {
+    int16_t val = get_star_x(index);
     if (val < -padding) return true;
     if (val >= (OLED_DISPLAY_WIDTH + padding)) return true;
     val = get_star_y(index);
@@ -170,32 +176,128 @@ bool out_of_bounds(uint8_t index, uint8_t padding) {
 
 void update_star(uint8_t index) {
     star_rad[index] *= Z_FACTOR;
-    if (out_of_bounds(index, 0)) {
+    if (out_of_bounds(index, 24)) {
         star_ang[index] = random8();
         star_rad[index] = random8_max(8) + SPAWN_RANGE;
     }
 }
 
+void update_center(void) {
+    if (center_target_x > center_x) {
+        center_x += 1;
+    } else if (center_target_x < center_x) {
+        center_x -= 1;
+    }
+    if (center_target_y > center_y) {
+        center_y += 1;
+    } else if (center_target_y < center_y) {
+        center_y -= 1;
+    }
+}
+
+void render_voyager(int16_t x, int16_t y, bool fill, bool alt_frame) {
+    /*
+     * Saucer section (row by row)
+     */
+    // Row 3
+    for(uint8_t i = 0; i < 6; i++) oled_set_pixel(x + 5 + i, y + 3, fill);
+    // Row 4
+    for(uint8_t i = 0; i < 3; i++) {
+        oled_set_pixel(x + 2 + i, y + 4, fill);
+        oled_set_pixel(x + 11 + i, y + 4, fill);
+    }
+    if (fill) {
+        for(uint8_t i = 0; i < 6; i++) oled_set_pixel(x + 5 + i, y + 4, false);
+    }
+    // Row 5
+    for(uint8_t i = 0; i < 4; i++) oled_set_pixel(x + 6 + i, y + 5, fill);
+    oled_set_pixel(x + 1, y + 5, fill);
+    oled_set_pixel(x + 14, y + 5, fill);
+    if (fill) {
+        for(uint8_t i = 0; i < 4; i++) {
+            oled_set_pixel(x + 2 + i, y + 5, false);
+            oled_set_pixel(x + 10 + i, y + 5, false);
+        }
+    }
+    // Row 6
+    for(uint8_t i = 0; i < 6; i++) {
+        oled_set_pixel(x + i, y + 6, fill);
+        oled_set_pixel(x + 10 + i, y + 6, fill);
+    }
+    if (fill) {
+        for(uint8_t i = 0; i < 4; i++) oled_set_pixel(x + 6 + i, y + 6, false);
+    }
+    // Row 7
+    for(uint8_t i = 0; i < 4; i++) oled_set_pixel(x + 6 + i, y + 7, fill);
+    /*
+     * Warp Drives
+     */
+    for(uint8_t i = 0; i < 3; i++) {
+        // Left Grills
+        oled_set_pixel(x, y + 9 + i, fill);
+        oled_set_pixel(x + 2, y + 9 + i, fill);
+        oled_set_pixel(x + 4, y + 9 + i, fill);
+        // Right Grills
+        oled_set_pixel(x + 11, y + 9 + i, fill);
+        oled_set_pixel(x + 13, y + 9 + i, fill);
+        oled_set_pixel(x + 15, y + 9 + i, fill);
+        // Gaps
+        // Left
+        oled_set_pixel(x + 1, y + 9 + i, alt_frame);
+        oled_set_pixel(x + 3, y + 9 + i, alt_frame);
+        // Right
+        oled_set_pixel(x + 12, y + 9 + i, alt_frame);
+        oled_set_pixel(x + 14, y + 9 + i, alt_frame);
+        // Grill Top
+        oled_set_pixel(x + 1 + i, y + 8, fill);
+        oled_set_pixel(x + 12 + i, y + 8, fill);
+        // Grill Bottom
+        oled_set_pixel(x + 1 + i, y + 12, fill);
+        oled_set_pixel(x + 12 + i, y + 12, fill);
+    }
+    /*
+     * Connector Section
+     */
+    for(uint8_t i = 0; i < 2; i++) {
+        oled_set_pixel(x + 7 + i, y + 8, fill);
+        oled_set_pixel(x + 5 + i, y + 10, fill);
+        oled_set_pixel(x + 9 + i, y + 10, fill);
+    }
+    oled_set_pixel(x + 6, y + 9, fill);
+    oled_set_pixel(x + 9, y + 9, fill);
+}
+
 void render_starfield(void) {
+    uint16_t now = timer_read();
     if ((n_stars < MAX_STARS) && (timer_elapsed(star_spawn_timer) >= SPAWN_DELAY)) {
         spawn_star();
-        star_spawn_timer = timer_read();
+        star_spawn_timer = now;
+    }
+    if ((now % CENTER_JUMP_TIMEOUT) == 0) {
+        center_target_x = random8_max(OLED_DISPLAY_WIDTH);
+        center_target_y = random8_max(OLED_DISPLAY_HEIGHT);
+        center_jump_timer = now;
     }
     if (timer_elapsed(star_update_timer) >= UPDATE_DELAY) {
-        uint8_t x, y;
-        for(int8_t i = 0; i < n_stars; i++) {
+        int16_t x, y;
+        for(uint8_t i = 0; i < n_stars; i++) {
             x = get_star_x(i);
             y = get_star_y(i);
             // if (!out_of_bounds(i, 0))
             { oled_set_pixel(x, y, false); }
-            // oled_clear();
+        }
+        render_voyager(center_x - 8, center_y - 8, false, false);
+        update_center();
+        for(uint8_t i = 0; i < n_stars; i++) {
             update_star(i);
             x = get_star_x(i);
             y = get_star_y(i);
             // if (!out_of_bounds(i, 0))
             { oled_set_pixel(x, y, true); }
         }
-        star_update_timer = timer_read();
+        render_voyager(center_x - 8, center_y - 8, true, alt_frame);
+        alt_frame = !alt_frame;
+        star_update_timer = now;
     }
 }
 #endif

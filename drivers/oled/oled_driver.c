@@ -646,6 +646,9 @@ void oled_task(void) {
 }
 
 void oled_set_pixel(uint16_t x, uint16_t y, bool on) {
+    if (x < 0 || y < 0 || x >= OLED_DISPLAY_WIDTH || y >= OLED_DISPLAY_HEIGHT) {
+        return;
+    }
     uint16_t index = x + (y / 8) * OLED_DISPLAY_WIDTH;
     if (on) {
         oled_buffer[index] |= (1 << (y % 8));
