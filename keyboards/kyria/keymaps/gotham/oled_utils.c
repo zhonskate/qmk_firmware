@@ -118,75 +118,61 @@ void render_status(void) {
 #ifdef STARFIELD_ENABLE
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-    init_cache();
+    random16_set_seed(12345);
     return OLED_ROTATION_180;
 }
 
 #define CENTER_H OLED_DISPLAY_WIDTH/2
 #define CENTER_V OLED_DISPLAY_HEIGHT/2
 #define SCREEN_RATIO OLED_DISPLAY_WIDTH / OLED_DISPLAY_HEIGHT
-#define SPAWN_RANGE 12
-#define MAX_STARS 16
-#define Z_FACTOR 1.1
-#define SPAWN_DELAY 500
-#define UPDATE_DELAY 32
-
-#define PI2 (2 * 3.141592653589793238)
-
-#define RAND_RESOLUTION 64
-float rand_map[RAND_RESOLUTION];
-float sin_map[RAND_RESOLUTION];
-float cos_map[RAND_RESOLUTION];
+#define SPAWN_RANGE 16
+#define MAX_STARS 20
+#define Z_FACTOR 1.15
+#define SPAWN_DELAY 1000
+#define UPDATE_DELAY 42
 
 uint8_t star_ang[MAX_STARS];
-float star_rad[MAX_STARS];
+uint8_t star_rad[MAX_STARS];
 
 uint8_t n_stars = 0;
 uint16_t star_spawn_timer = 0;
 uint16_t star_update_timer = 0;
 
-void init_cache(void) {
-    float part = PI2 / RAND_RESOLUTION;
-    for(uint8_t i = 0; i < RAND_RESOLUTION; i++) {
-        rand_map[i] = part * i;
-        sin_map[i] = sin(rand_map[i]);
-        cos_map[i] = cos(rand_map[i]);
-    }
-}
-
-uint8_t rand_range(uint8_t range) {
+uint16_t rand_range(uint16_t range) {
     return rand() % range;
 }
 
 void spawn_star(void) {
-    star_ang[n_stars] = rand_range(RAND_RESOLUTION);
-    star_rad[n_stars] = rand_range(8) + SPAWN_RANGE;
+    star_ang[n_stars] = random8();
+    star_rad[n_stars] = random8_max(8) + SPAWN_RANGE;
     n_stars++;
 }
 
 uint8_t get_star_x(uint8_t index) {
-    return (uint8_t)(round(cos_map[star_ang[index]] * star_rad[index] + CENTER_H));
+    // return (uint8_t)(cos(star_ang[index]) * star_rad[index] + CENTER_H);
+    return CENTER_H + (cos8(star_ang[index]) - 128) * star_rad[index] / 128;
 }
 
 uint8_t get_star_y(uint8_t index) {
-    return (uint8_t)(round(sin_map[star_ang[index]] * star_rad[index] + CENTER_V));
+    // return (uint8_t)(sin(star_ang[index]) * star_rad[index] + CENTER_V);
+    return CENTER_V + (sin8(star_ang[index]) - 128) * star_rad[index] / 128;
 }
 
-bool out_of_bounds(uint8_t index) {
+bool out_of_bounds(uint8_t index, uint8_t padding) {
     uint8_t val = get_star_x(index);
-    if (val < 0) return true;
-    if (val >= OLED_DISPLAY_WIDTH) return true;
+    if (val < -padding) return true;
+    if (val >= (OLED_DISPLAY_WIDTH + padding)) return true;
     val = get_star_y(index);
-    if (val < 0) return true;
-    if (val >= OLED_DISPLAY_HEIGHT) return true;
+    if (val < -padding) return true;
+    if (val >= (OLED_DISPLAY_HEIGHT + padding)) return true;
     return false;
 }
 
 void update_star(uint8_t index) {
     star_rad[index] *= Z_FACTOR;
-    if (out_of_bounds(index)) {
-        star_ang[index] = rand_range(RAND_RESOLUTION);
-        star_rad[index] = rand_range(8) + SPAWN_RANGE;
+    if (out_of_bounds(index, 0)) {
+        star_ang[index] = random8();
+        star_rad[index] = random8_max(8) + SPAWN_RANGE;
     }
 }
 
@@ -197,14 +183,17 @@ void render_starfield(void) {
     }
     if (timer_elapsed(star_update_timer) >= UPDATE_DELAY) {
         uint8_t x, y;
-        for(uint8_t i = 0; i < n_stars; i++) {
+        for(int8_t i = 0; i < n_stars; i++) {
             x = get_star_x(i);
             y = get_star_y(i);
-            oled_set_pixel(x, y, false);
+            // if (!out_of_bounds(i, 0))
+            { oled_set_pixel(x, y, false); }
+            // oled_clear();
             update_star(i);
             x = get_star_x(i);
             y = get_star_y(i);
-            oled_set_pixel(x, y, true);
+            // if (!out_of_bounds(i, 0))
+            { oled_set_pixel(x, y, true); }
         }
         star_update_timer = timer_read();
     }
