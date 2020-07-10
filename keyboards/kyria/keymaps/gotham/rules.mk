@@ -4,15 +4,12 @@ RGBLIGHT_ENABLE    = yes  # Enable keyboard RGB underglow
 OLED_DRIVER_ENABLE = yes  # Enables the use of OLED displays
 THUMBSTICK_ENABLE  = no   # Enables analog thumbstick code
 STARFIELD_ENABLE = yes
+STARFIELD_WANDER = yes
+STARFIELD_SHIP = no
 
 CONSOLE_ENABLE = yes
 
 SPLIT_TRANSPORT = custom
-
-ifeq ($(strip $(STARFIELD_ENABLE)), yes)
-	OPT_DEFS += -DSTARFIELD_ENABLE
-	SRC += lib/lib8tion/lib8tion.c
-endif
 
 ifeq ($(strip $(SPLIT_TRANSPORT)), custom)
 	OPT_DEFS += -DCUSTOM_TRANSPORT
@@ -62,6 +59,17 @@ endif
 
 ifeq ($(strip $(OLED_DRIVER_ENABLE)), yes)
 	SRC += oled_utils.c
+	ifeq ($(strip $(STARFIELD_ENABLE)), yes)
+		OPT_DEFS += -DSTARFIELD_ENABLE
+		SRC += oled_animations/starfield.c
+		SRC += lib/lib8tion/lib8tion.c
+		ifeq ($(strip $(STARFIELD_WANDER)), yes)
+			OPT_DEFS += -DSTARFIELD_WANDER
+			ifeq ($(strip $(STARFIELD_SHIP)), yes)
+				OPT_DEFS += -DSTARFIELD_SHIP
+			endif
+		endif
+	endif
 endif
 
 ifeq ($(strip $(THUMBSTICK_ENABLE)), yes)
