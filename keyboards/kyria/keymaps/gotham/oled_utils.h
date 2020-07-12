@@ -10,9 +10,15 @@
 #    include "thumbstick.h"
 #endif
 
-#ifdef STARFIELD_ENABLE
-#   include "oled_animations/starfield.h"
+#if defined(OLED_ANIMATIONS_ENABLE)
+#   if defined(OLED_ANIM_DVD_LOGO)
+#       include "oled_animations/dvd_logo.h"
+#   elif defined(OLED_ANIM_STARFIELD)
+#       include "oled_animations/starfield.h"
+#   endif
 #endif
+
+uint32_t oled_sleep_timer;
 
 void render_kyria_logo(void);
 

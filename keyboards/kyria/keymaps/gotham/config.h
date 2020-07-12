@@ -26,8 +26,12 @@
 
 #ifdef OLED_DRIVER_ENABLE
 #    define OLED_DISPLAY_128X64
-#    define OLED_FONT_H "keyboards/kyria/keymaps/gotham/glcdfont.c"
-#    define OLED_TIMEOUT 10000
+
+// #   define OLED_ANIM_STARFIELD
+// #   define OLED_ANIM_STARFIELD_WANDER
+// #   define OLED_ANIM_STARFIELD_SHIP
+#   define OLED_ANIM_DVD_LOGO
+>>>>>>> 93573dbfb... Add sprite rendering, dvd logo anim, and more
 #endif
 
 #ifdef RGBLIGHT_ENABLE

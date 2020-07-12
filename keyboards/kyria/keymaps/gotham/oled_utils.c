@@ -1,13 +1,23 @@
 #include "oled_utils.h"
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-#ifdef STARFIELD_ENABLE
+    oled_sleep_timer = timer_read32();
+#if defined(OLED_ANIM_STARFIELD)
     oled_init_starfield();
+#elif defined(OLED_ANIM_DVD_LOGO)
+    oled_init_dvd_logo();
 #endif
     return OLED_ROTATION_180;
 }
 
-void oled_task_user(void) { render_status(); }
+void oled_task_user(void) {
+    if (timer_elapsed(oled_sleep_timer) >= 30000) {
+        oled_off();
+        return;
+    } else {
+        render_status();
+    }
+}
 
 void render_layer(void) {
     oled_write_P(PSTR("\nLayer: "), false);
@@ -95,10 +105,14 @@ void render_status(void) {
         oled_write_P(led_state.caps_lock ? PSTR("CAPLCK ") : PSTR("       "), false);
         oled_write_P(led_state.scroll_lock ? PSTR("SCRLCK ") : PSTR("       "), false);
     } else {
-#ifndef STARFIELD_ENABLE
+#ifndef OLED_ANIMATIONS_ENABLE
         oled_write_P(PSTR("\n\n\n      Kyria v1.0\n"), false);
 #else
+#   if defined(OLED_ANIM_STARFIELD)
         render_starfield();
+#   elif defined(OLED_ANIM_DVD_LOGO)
+        render_dvd_logo();
+#   endif
 #endif
     }
 }

@@ -3,73 +3,21 @@ ENCODER_ENABLE     = yes  # ENables the use of one or more encoders
 RGBLIGHT_ENABLE    = yes  # Enable keyboard RGB underglow
 OLED_DRIVER_ENABLE = yes  # Enables the use of OLED displays
 THUMBSTICK_ENABLE  = no   # Enables analog thumbstick code
-STARFIELD_ENABLE = yes
-STARFIELD_WANDER = yes
-STARFIELD_SHIP = no
-
+SPLIT_TRANSPORT = custom
 CONSOLE_ENABLE = yes
-
-SPLIT_TRANSPORT = custom
-
-ifeq ($(strip $(SPLIT_TRANSPORT)), custom)
-	OPT_DEFS += -DCUSTOM_TRANSPORT
-	QUANTUM_SRC += transport_custom.c
-	# Functions added via QUANTUM_LIB_SRC are only included in the final binary if they're called.
-	# Unused functions are pruned away, which is why we can add multiple drivers here without bloat.
-	ifeq ($(PLATFORM),AVR)
-		QUANTUM_LIB_SRC += i2c_master.c \
-							i2c_slave.c
-	endif
-
-	SERIAL_DRIVER ?= bitbang
-	ifeq ($(strip $(SERIAL_DRIVER)), bitbang)
-		QUANTUM_LIB_SRC += serial.c
-	else
-		QUANTUM_LIB_SRC += serial_$(strip $(SERIAL_DRIVER)).c
-	endif
-endif
-
-
-
-SPLIT_TRANSPORT = custom
-
-ifeq ($(strip $(SPLIT_TRANSPORT)), custom)
-	OPT_DEFS += -DCUSTOM_TRANSPORT
-	QUANTUM_SRC += transport_custom.c
-	# Functions added via QUANTUM_LIB_SRC are only included in the final binary if they're called.
-	# Unused functions are pruned away, which is why we can add multiple drivers here without bloat.
-	ifeq ($(PLATFORM),AVR)
-		QUANTUM_LIB_SRC += i2c_master.c \
-							i2c_slave.c
-	endif
-
-	SERIAL_DRIVER ?= bitbang
-	ifeq ($(strip $(SERIAL_DRIVER)), bitbang)
-		QUANTUM_LIB_SRC += serial.c
-	else
-		QUANTUM_LIB_SRC += serial_$(strip $(SERIAL_DRIVER)).c
-	endif
-endif
-
-
-
-ifeq ($(strip $(ENCODER_ENABLE)), yes)
-	SRC += encoder_utils.c
-endif
+OLED_ANIMATIONS_ENABLE = yes
 
 ifeq ($(strip $(OLED_DRIVER_ENABLE)), yes)
 	SRC += oled_utils.c
-	ifeq ($(strip $(STARFIELD_ENABLE)), yes)
-		OPT_DEFS += -DSTARFIELD_ENABLE
-		SRC += oled_animations/starfield.c
+	ifeq ($(strip $(OLED_ANIMATIONS_ENABLE)), yes)
+		OPT_DEFS += -DOLED_ANIMATIONS_ENABLE
 		SRC += lib/lib8tion/lib8tion.c
-		ifeq ($(strip $(STARFIELD_WANDER)), yes)
-			OPT_DEFS += -DSTARFIELD_WANDER
-			ifeq ($(strip $(STARFIELD_SHIP)), yes)
-				OPT_DEFS += -DSTARFIELD_SHIP
-			endif
-		endif
+		SRC += oled_animations/*.c
 	endif
+endif
+
+ifeq ($(strip $(ENCODER_ENABLE)), yes)
+	SRC += encoder_utils.c
 endif
 
 ifeq ($(strip $(THUMBSTICK_ENABLE)), yes)
@@ -78,3 +26,22 @@ ifeq ($(strip $(THUMBSTICK_ENABLE)), yes)
 	SRC += analog.c
 	SRC += thumbstick.c
 endif
+
+ifeq ($(strip $(SPLIT_TRANSPORT)), custom)
+	OPT_DEFS += -DCUSTOM_TRANSPORT
+	QUANTUM_SRC += transport_custom.c
+	# Functions added via QUANTUM_LIB_SRC are only included in the final binary if they're called.
+	# Unused functions are pruned away, which is why we can add multiple drivers here without bloat.
+	ifeq ($(PLATFORM),AVR)
+		QUANTUM_LIB_SRC += i2c_master.c \
+							i2c_slave.c
+	endif
+
+	SERIAL_DRIVER ?= bitbang
+	ifeq ($(strip $(SERIAL_DRIVER)), bitbang)
+		QUANTUM_LIB_SRC += serial.c
+	else
+		QUANTUM_LIB_SRC += serial_$(strip $(SERIAL_DRIVER)).c
+	endif
+endif
+
