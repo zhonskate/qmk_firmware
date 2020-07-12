@@ -15,4 +15,6 @@
 
 uint8_t rect_out_of_bounds(int16_t x, int16_t y, uint8_t width, uint8_t height, int8_t padding);
 
+bool point_out_of_bounds(int16_t x, int16_t y, int8_t padding);
+
 void oled_write_bitmap(const uint8_t* data, int16_t x, int16_t y, uint8_t width, uint8_t height, bool erase);

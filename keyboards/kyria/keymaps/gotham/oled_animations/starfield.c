@@ -15,10 +15,6 @@ uint16_t center_target_x = OLED_DISPLAY_WIDTH/2;
 uint16_t center_target_y = OLED_DISPLAY_HEIGHT/2;
 #endif
 
-#ifdef OLED_ANIM_STARFIELD_SHIP
-bool alt_frame = false;
-#endif
-
 void oled_init_starfield(void) {
     random16_set_seed(timer_read());
 }
@@ -60,80 +56,6 @@ void update_center(void) {
 }
 #endif
 
-#ifdef OLED_ANIM_STARFIELD_SHIP
-void render_voyager(int16_t x, int16_t y, bool fill, bool alt_frame) {
-    /*
-     * Saucer section (row by row)
-     */
-    // Row 3
-    for(uint8_t i = 0; i < 6; i++) oled_write_pixel(x + 5 + i, y + 3, fill);
-    // Row 4
-    for(uint8_t i = 0; i < 3; i++) {
-        oled_write_pixel(x + 2 + i, y + 4, fill);
-        oled_write_pixel(x + 11 + i, y + 4, fill);
-    }
-    if (fill) {
-        for(uint8_t i = 0; i < 6; i++) oled_write_pixel(x + 5 + i, y + 4, false);
-    }
-    // Row 5
-    for(uint8_t i = 0; i < 4; i++) oled_write_pixel(x + 6 + i, y + 5, fill);
-    oled_write_pixel(x + 1, y + 5, fill);
-    oled_write_pixel(x + 14, y + 5, fill);
-    if (fill) {
-        for(uint8_t i = 0; i < 4; i++) {
-            oled_write_pixel(x + 2 + i, y + 5, false);
-            oled_write_pixel(x + 10 + i, y + 5, false);
-        }
-    }
-    // Row 6
-    for(uint8_t i = 0; i < 6; i++) {
-        oled_write_pixel(x + i, y + 6, fill);
-        oled_write_pixel(x + 10 + i, y + 6, fill);
-    }
-    if (fill) {
-        for(uint8_t i = 0; i < 4; i++) oled_write_pixel(x + 6 + i, y + 6, false);
-    }
-    // Row 7
-    for(uint8_t i = 0; i < 4; i++) oled_write_pixel(x + 6 + i, y + 7, fill);
-    /*
-     * Warp Drives
-     */
-    for(uint8_t i = 0; i < 3; i++) {
-        // Left Grills
-        oled_write_pixel(x, y + 9 + i, fill);
-        oled_write_pixel(x + 2, y + 9 + i, fill);
-        oled_write_pixel(x + 4, y + 9 + i, fill);
-        // Right Grills
-        oled_write_pixel(x + 11, y + 9 + i, fill);
-        oled_write_pixel(x + 13, y + 9 + i, fill);
-        oled_write_pixel(x + 15, y + 9 + i, fill);
-        // Gaps
-        // Left
-        oled_write_pixel(x + 1, y + 9 + i, alt_frame);
-        oled_write_pixel(x + 3, y + 9 + i, alt_frame);
-        // Right
-        oled_write_pixel(x + 12, y + 9 + i, alt_frame);
-        oled_write_pixel(x + 14, y + 9 + i, alt_frame);
-        // Grill Top
-        oled_write_pixel(x + 1 + i, y + 8, fill);
-        oled_write_pixel(x + 12 + i, y + 8, fill);
-        // Grill Bottom
-        oled_write_pixel(x + 1 + i, y + 12, fill);
-        oled_write_pixel(x + 12 + i, y + 12, fill);
-    }
-    /*
-     * Connector Section
-     */
-    for(uint8_t i = 0; i < 2; i++) {
-        oled_write_pixel(x + 7 + i, y + 8, fill);
-        oled_write_pixel(x + 5 + i, y + 10, fill);
-        oled_write_pixel(x + 9 + i, y + 10, fill);
-    }
-    oled_write_pixel(x + 6, y + 9, fill);
-    oled_write_pixel(x + 9, y + 9, fill);
-}
-#endif
-
 void render_starfield(void) {
     uint16_t now = timer_read();
     if ((n_stars < MAX_STARS) && (timer_elapsed(star_spawn_timer) >= SPAWN_DELAY)) {
@@ -152,11 +74,9 @@ void render_starfield(void) {
         for(uint8_t i = 0; i < n_stars; i++) {
             x = get_star_x(i);
             y = get_star_y(i);
+            if (!point_out_of_bounds(x, y, 0))
             { oled_write_pixel(x, y, false); }
         }
-#ifdef OLED_ANIM_STARFIELD_SHIP
-        render_voyager(center_x - 8, center_y - 8, false, false);
-#endif
 #ifdef OLED_ANIM_STARFIELD_WANDER
         update_center();
 #endif
@@ -164,12 +84,9 @@ void render_starfield(void) {
             update_star(i);
             x = get_star_x(i);
             y = get_star_y(i);
+            if (!point_out_of_bounds(x, y, 0))
             { oled_write_pixel(x, y, true); }
         }
-#ifdef OLED_ANIM_STARFIELD_SHIP
-        render_voyager(center_x - 8, center_y - 8, true, alt_frame);
-        alt_frame = !alt_frame;
-#endif
         star_update_timer = now;
     }
 }

@@ -20,6 +20,10 @@ uint8_t rect_out_of_bounds(int16_t x, int16_t y, uint8_t width, uint8_t height, 
     return collision_map;
 }
 
+bool point_out_of_bounds(int16_t x, int16_t y, int8_t padding) {
+    return rect_out_of_bounds(x, y, 1, 1, padding);
+}
+
 static const uint8_t column_masks[8] = {1, 2, 4, 8, 16, 32, 64, 128};
 void oled_write_bitmap(const uint8_t* data, int16_t x, int16_t y, uint8_t width, uint8_t height, bool erase) {
     if ((x + width) <= 0 || (x >= OLED_DISPLAY_WIDTH) || (y + height <= 0) || (y >= OLED_DISPLAY_HEIGHT)) {
@@ -54,6 +58,7 @@ void oled_write_bitmap(const uint8_t* data, int16_t x, int16_t y, uint8_t width,
     if (n_trailing_row_bits > 0) {
         total_rows++;
     }
+    total_rows -= sprite_y_row_offset;
     // TODO: Check for the case (y % 8 == 0) and just set bytes directly
     for(uint8_t sprite_row_i = 0; sprite_row_i < total_rows; sprite_row_i++) {
         uint8_t n_bits = 8;
@@ -76,7 +81,8 @@ void oled_write_bitmap(const uint8_t* data, int16_t x, int16_t y, uint8_t width,
             uint8_t canvas_x = draw_x + sprite_col_i;
             for(uint8_t bit_i = 0; bit_i < n_bits; bit_i++) {
                 if (byte & column_masks[bit_start + bit_i]) {
-                    oled_write_pixel(canvas_x, draw_y + bit_i, !erase);
+                    uint8_t canvas_y = draw_y + bit_i;
+                    if (!point_out_of_bounds(canvas_x, canvas_y, 0)) oled_write_pixel(canvas_x, canvas_y, !erase);
                 }
             }
         }
