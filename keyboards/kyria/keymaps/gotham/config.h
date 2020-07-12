@@ -26,7 +26,11 @@
 
 #ifdef OLED_DRIVER_ENABLE
 #    define OLED_DISPLAY_128X64
-#    define OLED_TIMEOUT 10000
+
+// #   define OLED_ANIM_STARFIELD
+// #   define OLED_ANIM_STARFIELD_WANDER
+// #   define OLED_ANIM_STARFIELD_SHIP
+#   define OLED_ANIM_DVD_LOGO
 #endif
 
 #ifdef RGBLIGHT_ENABLE
