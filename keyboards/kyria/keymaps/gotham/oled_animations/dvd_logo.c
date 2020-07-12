@@ -20,7 +20,7 @@ static int16_t logo_y;
 static uint16_t logo_update_timer = 0;
 
 void oled_init_dvd_logo(void) {
-    random16_set_seed(12346);
+    random16_set_seed(timer_read());
     logo_x = random8_max(OLED_DISPLAY_WIDTH - DVD_LOGO_WIDTH);
     logo_y = random8_max(OLED_DISPLAY_HEIGHT - DVD_LOGO_HEIGHT);
     move_up = (random8() % 2 == 0);
