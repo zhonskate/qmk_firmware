@@ -20,7 +20,7 @@ bool alt_frame = false;
 #endif
 
 void oled_init_starfield(void) {
-    random16_set_seed(12345);
+    random16_set_seed(timer_read());
 }
 
 void spawn_star(void) {
