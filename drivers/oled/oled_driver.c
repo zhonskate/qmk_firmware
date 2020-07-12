@@ -645,7 +645,7 @@ void oled_task(void) {
 #endif
 }
 
-void oled_set_pixel(uint16_t x, uint16_t y, bool on) {
+void oled_write_pixel(int16_t x, int16_t y, bool on) {
     if (x < 0 || y < 0 || x >= OLED_DISPLAY_WIDTH || y >= OLED_DISPLAY_HEIGHT) {
         return;
     }
@@ -657,4 +657,5 @@ void oled_set_pixel(uint16_t x, uint16_t y, bool on) {
     }
     oled_dirty |= (1 << (index / OLED_BLOCK_SIZE));
 }
+
 __attribute__((weak)) void oled_task_user(void) {}
