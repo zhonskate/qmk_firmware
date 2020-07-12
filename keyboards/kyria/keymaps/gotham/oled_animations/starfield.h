@@ -23,9 +23,5 @@ void update_star(uint8_t index);
 void update_center(void);
 #endif
 
-#ifdef OLED_ANIM_STARFIELD_SHIP
-void render_voyager(int16_t x, int16_t y, bool fill, bool alt_frame);
-#endif
-
 void render_starfield(void);
 #endif
