@@ -11,7 +11,6 @@ uint16_t center_x = OLED_DISPLAY_WIDTH/2;
 uint16_t center_y = OLED_DISPLAY_HEIGHT/2;
 
 void oled_init_starfield(void) {
-    random16_set_seed(timer_read());
     set_starfield_center();
 }
 
@@ -30,10 +29,13 @@ uint8_t get_star_y(uint8_t index) {
 }
 
 void update_star(uint8_t index) {
-    if (index % 5 == 2) {
-        star_rad[index] += map8(cubicwave8(star_rad[index]), 1, ZOOM_SPEED);
-    } else {
+#ifdef OLED_ANIM_STARFIELD_DUALLAYER
+    if (index % 2 == 0) {
         star_rad[index] += 1;
+    } else
+#endif
+    {
+        star_rad[index] += map8(cubicwave8(star_rad[index]), 1, ZOOM_SPEED);
     }
     if (rect_out_of_bounds(get_star_x(index), get_star_y(index), 1, 1, 24)) {
         star_ang[index] = random8_max(250) + 5;

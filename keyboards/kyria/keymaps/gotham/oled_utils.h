@@ -20,6 +20,8 @@
 
 uint32_t oled_sleep_timer;
 
+bool process_record_keymap_oled(uint16_t keycode, keyrecord_t *record);
+
 void render_kyria_logo(void);
 
 void render_layer(void);
