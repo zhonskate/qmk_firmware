@@ -10,7 +10,7 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     return OLED_ROTATION_180;
 }
 
-bool process_record_keymap_oled(uint16_t keycode, keyrecord_t *record) {
+__attribute__((weak)) bool process_record_keymap_oled(uint16_t keycode, keyrecord_t *record) {
     oled_sleep_timer = timer_read32();
 #ifdef OLED_ANIM_STARFIELD
     random16_add_entropy(keycode);

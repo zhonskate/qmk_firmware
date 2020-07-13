@@ -1,7 +1,7 @@
 CONSOLE_ENABLE	       = no
 MOUSEKEY_ENABLE        = no
 ENCODER_ENABLE         = yes
-RGBLIGHT_ENABLE        = no
+RGBLIGHT_ENABLE        = yes
 OLED_DRIVER_ENABLE     = yes
 THUMBSTICK_ENABLE  	   = no
 SPLIT_TRANSPORT        = custom
