@@ -13,6 +13,10 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 void oled_task_user(void) {
     if (timer_elapsed(oled_sleep_timer) >= 30000) {
         oled_off();
+    #ifdef OLED_ANIM_STARFIELD_WANDER
+        erase_stars();
+        set_starfield_center();
+    #endif
         return;
     } else {
         render_status();
