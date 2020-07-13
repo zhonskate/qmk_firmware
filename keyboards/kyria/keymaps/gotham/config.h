@@ -29,6 +29,7 @@
 
 #   define OLED_ANIM_STARFIELD
 #   define OLED_ANIM_STARFIELD_WANDER
+// #   define OLED_ANIM_STARFIELD_DUALLAYER
 // #   define OLED_ANIM_DVD_LOGO
 #endif
 

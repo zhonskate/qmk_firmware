@@ -85,7 +85,9 @@ layer_state_t layer_state_set_user(layer_state_t state) { return update_tri_laye
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #ifdef OLED_DRIVER_ENABLE
-    oled_sleep_timer = timer_read32();
+    if (!process_record_keymap_oled(keycode, record)) {
+        return false;
+    }
 #endif
     switch (keycode) {
 #ifdef ENCODER_ENABLE
