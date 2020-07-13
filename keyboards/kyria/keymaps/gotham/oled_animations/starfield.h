@@ -5,8 +5,8 @@
 #define MAX_STARS 24
 #define ZOOM_SPEED 16
 #define SPAWN_RANGE 16
-#define SPAWN_DELAY 333
-#define STARFIELD_FPS 20 // More than 20 and pixels get stuck in the bottom part
+#define SPAWN_DELAY 100
+#define STARFIELD_FPS 16 // More than 20 and pixels get stuck in the bottom part
 
 #define UPDATE_DELAY (uint8_t)(1000.0 / STARFIELD_FPS)
 

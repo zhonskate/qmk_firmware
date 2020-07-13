@@ -1,10 +1,10 @@
-MOUSEKEY_ENABLE    = no   # Mouse keys
-ENCODER_ENABLE     = yes  # ENables the use of one or more encoders
-RGBLIGHT_ENABLE    = yes  # Enable keyboard RGB underglow
-OLED_DRIVER_ENABLE = yes  # Enables the use of OLED displays
-THUMBSTICK_ENABLE  = no   # Enables analog thumbstick code
-SPLIT_TRANSPORT = custom
-CONSOLE_ENABLE = yes
+CONSOLE_ENABLE	       = no
+MOUSEKEY_ENABLE        = no
+ENCODER_ENABLE         = yes
+RGBLIGHT_ENABLE        = no
+OLED_DRIVER_ENABLE     = yes
+THUMBSTICK_ENABLE  	   = no
+SPLIT_TRANSPORT        = custom
 OLED_ANIMATIONS_ENABLE = yes
 
 ifeq ($(strip $(OLED_DRIVER_ENABLE)), yes)
