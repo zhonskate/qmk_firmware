@@ -17,8 +17,6 @@ uint8_t get_star_y(uint8_t index);
 
 void spawn_star(void);
 void update_star(uint8_t index);
-void update_stars(void);
-void draw_stars(void);
 void erase_stars(void);
 
 #ifdef OLED_ANIM_STARFIELD_WANDER
