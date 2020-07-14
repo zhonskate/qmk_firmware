@@ -41,7 +41,7 @@ More tunables are described here. Values like deadzone threshold are hardware-sp
 - __THUMBSTICK_DEAD_ZONE 90:__ Values below this are ignored (deadzone).
 - __THUMBSTICK_FINE_ZONE 180:__  Values below this enable fine movement.
 
-- __THUMBSTICK_MODE <mode>:__ One of THUMBSTICK_MODE_MOUSE, THUMBSTICK_MODE_ARROWS and THUMBSTICK_MODE_SCROLL. This is just the default mode, it can be changed by calling ```void thumbstick_mode_cycle(bool reverse)``` within code.
+- __THUMBSTICK_MODE <mode>:__ One of THUMBSTICK_MODE_MOUSE, THUMBSTICK_MODE_ARROWS and THUMBSTICK_MODE_SCROLL. This is just the default mode, it can be changed by calling ```thumbstick_mode_cycle_forward()``` and ```thumbstick_mode_cycle_backward()``` within code.
 
 - __THUMBSTICK_SPEED 127:__ Cursor speed in THUMBSTICK_MODE_MOUSE.
 - __THUMBSTICK_FINE_SPEED 64:__ Fine cursor speed in THUMBSTICK_MODE_MOUSE (kicks in when slightly nudging the thumbstick).

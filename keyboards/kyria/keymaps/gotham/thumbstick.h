@@ -31,6 +31,7 @@ typedef enum {
 #include "analog.h"
 #include "split_util.h"
 #include "pointing_device.h"
+#include "lib/lib8tion/lib8tion.h"
 
 #if defined THUMBSTICK_DEBUG
 #    include "print.h"
@@ -43,12 +44,6 @@ uint16_t thumbstickLogTimer;
 
 typedef struct {
     thumbstick_mode_t mode;
-    uint16_t          deadZone;
-    uint16_t          fineZone;
-    uint16_t          speed;
-    uint16_t          fineSpeed;
-    float             axisSeparation;
-    bool              eightAxis;
 } thumbstick_config_t;
 
 typedef struct {
@@ -82,15 +77,14 @@ uint16_t thumbstickScrollTimer;
 
 thumbstick_state_t thumbstick_state;
 
+void thumbstick_mode_set(thumbstick_mode_t mode);
 void thumbstick_vector_set(thumbstick_vector_t vector);
 
+thumbstick_mode_t thumbstick_mode_get(void);
 thumbstick_vector_t thumbstick_vector_get(void);
 
-void thumbstick_mode_set(thumbstick_mode_t mode);
-
-thumbstick_mode_t thumbstick_mode_get(void);
-
-void thumbstick_mode_cycle(bool reverse);
+void thumbstick_mode_cycle_forward(void);
+void thumbstick_mode_cycle_backward(void);
 
 void thumbstick_init(void);
 
