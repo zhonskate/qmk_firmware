@@ -21,7 +21,7 @@ uint8_t rect_out_of_bounds(int16_t x, int16_t y, uint8_t width, uint8_t height, 
 }
 
 bool point_out_of_bounds(int16_t x, int16_t y, int8_t padding) {
-    return rect_out_of_bounds(x, y, 1, 1, padding);
+    return ((x < -padding) || (y < -padding) || (x > (OLED_DISPLAY_WIDTH + padding)) || (y > (OLED_DISPLAY_HEIGHT + padding)));
 }
 
 static const uint8_t column_masks[8] = {1, 2, 4, 8, 16, 32, 64, 128};
