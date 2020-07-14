@@ -16,7 +16,7 @@ void oled_init_starfield(void) {
 
 void spawn_star(void) {
     star_ang[n_stars] = random8();
-    star_rad[n_stars] = random8_max(16) + SPAWN_RANGE;
+    star_rad[n_stars] = random8_min_max(SPAWN_RANGE, 16);
     n_stars++;
 }
 
@@ -39,7 +39,7 @@ void update_star(uint8_t index) {
     }
     if (point_out_of_bounds(get_star_x(index), get_star_y(index), 0)) {
         star_ang[index] = random8();
-        star_rad[index] = random8_max(16) + SPAWN_RANGE;
+        star_rad[index] = random8_min_max(SPAWN_RANGE, 16);
     }
 }
 

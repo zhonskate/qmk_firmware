@@ -2,9 +2,9 @@
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     oled_sleep_timer = timer_read32();
-#if defined(OLED_ANIM_STARFIELD)
+#if defined(OLED_ANIMATIONS_ENABLED) && defined(OLED_ANIM_STARFIELD)
     oled_init_starfield();
-#elif defined(OLED_ANIM_DVD_LOGO)
+#elif defined(OLED_ANIMATIONS_ENABLED) && defined(OLED_ANIM_DVD_LOGO)
     oled_init_dvd_logo();
 #endif
     return OLED_ROTATION_180;
@@ -12,7 +12,7 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 
 __attribute__((weak)) bool process_record_keymap_oled(uint16_t keycode, keyrecord_t *record) {
     oled_sleep_timer = timer_read32();
-#ifdef OLED_ANIM_STARFIELD
+#if defined(OLED_ANIMATIONS_ENABLED) && defined(OLED_ANIM_STARFIELD)
     random16_add_entropy(keycode);
 #endif
     return true;
@@ -21,7 +21,7 @@ __attribute__((weak)) bool process_record_keymap_oled(uint16_t keycode, keyrecor
 void oled_task_user(void) {
     if (timer_elapsed(oled_sleep_timer) >= 30000) {
         oled_off();
-    #ifdef OLED_ANIM_STARFIELD_WANDER
+    #if defined(OLED_ANIMATIONS_ENABLED) && defined(OLED_ANIM_STARFIELD_WANDER)
         erase_stars();
         set_starfield_center();
     #endif
