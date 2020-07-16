@@ -37,7 +37,7 @@ void update_star(uint8_t index) {
     {
         star_rad[index] += map8(cubicwave8(star_rad[index]), 1, ZOOM_SPEED);
     }
-    if (point_out_of_bounds(get_star_x(index), get_star_y(index), 0)) {
+    if (point_out_of_bounds(get_star_x(index), get_star_y(index), 24)) {
         star_ang[index] = random8();
         star_rad[index] = random8_min_max(SPAWN_RANGE, 16);
     }

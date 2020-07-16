@@ -2,11 +2,11 @@
 #pragma once
 #include "common.h"
 
-#define MAX_STARS 24
-#define ZOOM_SPEED 16
+#define MAX_STARS 20
+#define ZOOM_SPEED 24
 #define SPAWN_RANGE 16
 #define SPAWN_DELAY 100
-#define STARFIELD_FPS 16 // More than 20 and pixels get stuck in the bottom part
+#define STARFIELD_FPS 16 // High values might lock up the keyboard eventually
 
 #define UPDATE_DELAY (uint8_t)(1000.0 / STARFIELD_FPS)
 
