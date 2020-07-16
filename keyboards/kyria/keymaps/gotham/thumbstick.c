@@ -1,9 +1,9 @@
 #include "thumbstick.h"
 
 void thumbstick_init(void) {
-    thumbstickTimer       = 0;
-    thumbstickScrollTimer = 0;
-    thumbstick_state.config.mode           = THUMBSTICK_MODE_MOUSE;
+    thumbstickTimer              = 0;
+    thumbstickScrollTimer        = 0;
+    thumbstick_state.config.mode = THUMBSTICK_MODE_MOUSE;
 
 #if defined THUMBSTICK_DEBUG
     rawX               = 0;
@@ -16,7 +16,7 @@ void thumbstick_init(void) {
 
 // Axis-level wrapper to read raw value and return signed distanced from center
 int16_t thumbstick_get_component(uint8_t pin) {
-    int16_t value = analogReadPin(pin); // range of [0 to 1023]
+    int16_t value = analogReadPin(pin);  // range of [0 to 1023]
 #if defined THUMBSTICK_DEBUG
     if (pin == THUMBSTICK_PIN_X) {
         rawX  = value;
@@ -29,56 +29,38 @@ int16_t thumbstick_get_component(uint8_t pin) {
     return value - THUMBSTICK_RANGE_CENTER;
 }
 
-thumbstick_mode_t thumbstick_mode_get(void) { return thumbstick_state.config.mode; }
+thumbstick_mode_t   thumbstick_mode_get(void) { return thumbstick_state.config.mode; }
 thumbstick_vector_t thumbstick_vector_get(void) { return thumbstick_state.vector; }
-void thumbstick_mode_set(thumbstick_mode_t mode) { thumbstick_state.config.mode = mode; }
-void thumbstick_vector_set(thumbstick_vector_t vector) { thumbstick_state.vector = vector; }
+void                thumbstick_mode_set(thumbstick_mode_t mode) { thumbstick_state.config.mode = mode; }
+void                thumbstick_vector_set(thumbstick_vector_t vector) { thumbstick_state.vector = vector; }
 
-void thumbstick_mode_cycle_forward(void) {
-    thumbstick_mode_set(addmod8(thumbstick_mode_get(), 1, _THUMBSTICK_MODE_LAST));
-}
-void thumbstick_mode_cycle_backward(void) {
-    thumbstick_mode_set(submod8(thumbstick_mode_get(), 1, _THUMBSTICK_MODE_LAST));
-}
+void thumbstick_mode_cycle_forward(void) { thumbstick_mode_set(addmod8(thumbstick_mode_get(), 1, _THUMBSTICK_MODE_LAST)); }
+void thumbstick_mode_cycle_backward(void) { thumbstick_mode_set(submod8(thumbstick_mode_get(), 1, _THUMBSTICK_MODE_LAST)); }
 
 // Get mouse speed
-int16_t thumbstick_get_mouse_speed(int16_t component) {
-    int16_t  speed;
+int8_t thumbstick_get_mouse_speed(int16_t component) {
     uint16_t distance = abs(component);
-    if (distance > THUMBSTICK_FINE_ZONE) {
-        speed = THUMBSTICK_SPEED;
-    } else if (distance > THUMBSTICK_DEAD_ZONE) {
-        speed = THUMBSTICK_FINE_SPEED;
-    } else {
-        return 0;
-    }
-    return (float)speed * component / THUMBSTICK_RANGE_CENTER;
+    uint16_t speed    = ((distance > THUMBSTICK_FINE_ZONE) * THUMBSTICK_SPEED) + (((distance <= THUMBSTICK_FINE_ZONE) && (distance > THUMBSTICK_DEAD_ZONE)) * THUMBSTICK_FINE_SPEED);
+    return ((component < 0) * -1 + (component > 0)) * lerp16by16(0, speed, distance * 128);
 }
 
 // Fix direction within one of 8 axes (or 4 if 8-axis is disabled)
-thumbstick_direction_t thumbstick_get_discretized_direction(thumbstick_vector_t vector, float axisSeparation, bool eightAxis) {
+thumbstick_direction_t thumbstick_get_discretized_direction(thumbstick_vector_t vector, bool eightAxis) {
     thumbstick_direction_t direction;
     uint16_t               absX                = abs(vector.x);
     uint16_t               absY                = abs(vector.y);
-    uint16_t               maxComponent        = (absX > absY) ? absX : absY;
+    uint16_t               maxComponent        = (absX * (absX > absY)) + (absY * (absX <= absY));
     bool                   insideDeadZone      = (maxComponent <= THUMBSTICK_DEAD_ZONE);
-    bool                   outsideDiagonalZone = ((abs(absX - absY) / (float)maxComponent) >= axisSeparation);
-    if (insideDeadZone) {
-        direction.up = direction.down = direction.left = direction.right = false;
-    } else {
-        direction.up    = (vector.y < 0);
-        direction.down  = (vector.y > 0);
-        direction.left  = (vector.x < 0);
-        direction.right = (vector.x > 0);
-        // Let only the dominant direction remain under the right conditions
-        if (outsideDiagonalZone || !eightAxis) {
-            if (absX > absY) {
-                direction.up = direction.down = false;
-            } else {
-                direction.left = direction.right = false;
-            }
-        }
-    }
+    bool                   outsideDiagonalZone = (abs(absX - absY) >= THUMBSTICK_AXIS_SEPARATION);
+    bool                   dominantY           = (absY >= absX);
+
+    // Branchless code for these conditions:
+    // - Set all to false inside a deadzone
+    // - Otherwise, if outside the diagonal zone or eight axis is disabled, set only the dominant direction (either vertical or horizontal)
+    direction.up    = (!insideDeadZone) && (vector.y < 0) && (!((outsideDiagonalZone || !eightAxis) && !dominantY));
+    direction.down  = (!insideDeadZone) && (vector.y > 0) && (!((outsideDiagonalZone || !eightAxis) && !dominantY));
+    direction.left  = (!insideDeadZone) && (vector.x < 0) && (!((outsideDiagonalZone || !eightAxis) && dominantY));
+    direction.right = (!insideDeadZone) && (vector.x > 0) && (!((outsideDiagonalZone || !eightAxis) && dominantY));
     return direction;
 }
 
@@ -98,22 +80,23 @@ void thumbstick_read_vectors(void) {
     }
 }
 
-void                   thumbstick_calculate_state(void) {
+void thumbstick_calculate_state(void) {
     switch (thumbstick_state.config.mode) {
         case THUMBSTICK_MODE_MOUSE:
             thumbstick_state.report.x = thumbstick_get_mouse_speed(thumbstick_state.vector.x);
             thumbstick_state.report.y = thumbstick_get_mouse_speed(thumbstick_state.vector.y);
             break;
         case THUMBSTICK_MODE_ARROWS:
-            thumbstick_state.direction = thumbstick_get_discretized_direction(thumbstick_state.vector, THUMBSTICK_AXIS_SEPARATION, THUMBSTICK_EIGHT_AXIS);
+            thumbstick_state.direction = thumbstick_get_discretized_direction(thumbstick_state.vector, THUMBSTICK_EIGHT_AXIS);
             break;
         case THUMBSTICK_MODE_SCROLL:
             if (timer_elapsed(thumbstickScrollTimer) > THUMBSTICK_SCROLL_TIMEOUT) {
                 thumbstick_direction_t scrollDirection;
-                thumbstickScrollTimer     = timer_read();
-                scrollDirection           = thumbstick_get_discretized_direction(thumbstick_state.vector, THUMBSTICK_AXIS_SEPARATION, false);
-                thumbstick_state.report.v = (scrollDirection.up || scrollDirection.down) ? (scrollDirection.up ? THUMBSTICK_SCROLL_SPEED : -THUMBSTICK_SCROLL_SPEED) : 0;
-                thumbstick_state.report.h = (scrollDirection.left || scrollDirection.right) ? (scrollDirection.left ? -THUMBSTICK_SCROLL_SPEED : THUMBSTICK_SCROLL_SPEED) : 0;
+                thumbstickScrollTimer = timer_read();
+                scrollDirection       = thumbstick_get_discretized_direction(thumbstick_state.vector, false);
+
+                thumbstick_state.report.v = (scrollDirection.up + (scrollDirection.down * -1)) * THUMBSTICK_SCROLL_SPEED;
+                thumbstick_state.report.h = (scrollDirection.right + (scrollDirection.left * -1)) * THUMBSTICK_SCROLL_SPEED;
             } else {
                 thumbstick_state.report.v = thumbstick_state.report.h = 0;
             }
@@ -131,7 +114,7 @@ void thumbstick_process_state(report_mouse_t* report) {
 #ifdef THUMBSTICK_DEBUG
             if (timer_elapsed(thumbstickLogTimer) > 100) {
                 thumbstickLogTimer = timer_read();
-                uprintf("Raw (%d, %d); Dist (%d, %d); Vec (%d, %d);\n", rawX, rawY, distX, distY, thumbstick_state.vector.x, thumbstick_state.vector.y);
+                uprintf("Raw (%d, %d); Dist (%d, %d); Vec (%d, %d); Mouse (%d, %d);\n", rawX, rawY, distX, distY, thumbstick_state.vector.x, thumbstick_state.vector.y, thumbstick_state.report.x, thumbstick_state.report.y);
             }
 #endif
             break;
@@ -144,7 +127,7 @@ void thumbstick_process_state(report_mouse_t* report) {
 #ifdef THUMBSTICK_DEBUG
             if (timer_elapsed(thumbstickLogTimer) > 100) {
                 thumbstickLogTimer = timer_read();
-                uprintf("Up %d; Down %d; Left: %d; Right %d; Vec (%d, %d);\n", direction.up, direction.down, direction.left, direction.right, thumbstick_state.vector.x, thumbstick_state.vector.y);
+                uprintf("Up %d; Down %d; Left: %d; Right %d; Vec (%d, %d);\n", thumbstick_state.direction.up, thumbstick_state.direction.down, thumbstick_state.direction.left, thumbstick_state.direction.right, thumbstick_state.vector.x, thumbstick_state.vector.y);
             }
 #endif
             break;
@@ -154,7 +137,7 @@ void thumbstick_process_state(report_mouse_t* report) {
 #ifdef THUMBSTICK_DEBUG
             if (timer_elapsed(thumbstickLogTimer) > 100) {
                 thumbstickLogTimer = timer_read();
-                uprintf("Scroll (%d, %d)\n", report.h, report.v);
+                uprintf("Vec (%d, %d); Scroll (%d, %d);\n", thumbstick_state.vector.x, thumbstick_state.vector.y, thumbstick_state.report.v, thumbstick_state.report.h);
             }
 #endif
             break;
