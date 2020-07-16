@@ -21,10 +21,10 @@ __attribute__((weak)) bool process_record_keymap_oled(uint16_t keycode, keyrecor
 void oled_task_user(void) {
     if (timer_elapsed(oled_sleep_timer) >= 30000) {
         oled_off();
-    #if defined(OLED_ANIMATIONS_ENABLED) && defined(OLED_ANIM_STARFIELD_WANDER)
+#if defined(OLED_ANIMATIONS_ENABLED) && defined(OLED_ANIM_STARFIELD_WANDER)
         erase_stars();
         set_starfield_center();
-    #endif
+#endif
         return;
     } else {
         render_status();
@@ -118,11 +118,11 @@ void render_status(void) {
 #ifndef OLED_ANIMATIONS_ENABLE
         oled_write_P(PSTR("\n\n\n      Kyria v1.0\n"), false);
 #else
-#   if defined(OLED_ANIM_STARFIELD)
+#    if defined(OLED_ANIM_STARFIELD)
         render_starfield();
-#   elif defined(OLED_ANIM_DVD_LOGO)
+#    elif defined(OLED_ANIM_DVD_LOGO)
         render_dvd_logo();
-#   endif
+#    endif
 #endif
     }
 }
