@@ -8,16 +8,16 @@ typedef enum {
 } thumbstick_mode_t;
 
 // Parameters
-#define THUMBSTICK_DEAD_ZONE 90   // Values below this are ignored (deadzone)
-#define THUMBSTICK_FINE_ZONE 240  // Values below this enable fine movement
+#define THUMBSTICK_DEAD_ZONE 25  // Values below this are ignored (deadzone)
+#define THUMBSTICK_FINE_ZONE 35  // Values below this enable fine movement
 
 #define THUMBSTICK_MODE THUMBSTICK_MODE_MOUSE
-#define THUMBSTICK_SPEED 96  // Range [0 - 127]
-#define THUMBSTICK_FINE_SPEED 64
+#define THUMBSTICK_SPEED 72  // Range [0 - 127]
+#define THUMBSTICK_FINE_SPEED 48
 #define THUMBSTICK_SCROLL_SPEED 1
 
 #define THUMBSTICK_EIGHT_AXIS true
-#define THUMBSTICK_AXIS_SEPARATION 96  // range [0 - 511], angle away from diagonals
+#define THUMBSTICK_AXIS_SEPARATION 24  // range [0 - 127], angle away from diagonals
 
 // Implicit and derived constants
 #define THUMBSTICK_TIMEOUT 10          // Mouse report throttling time in ms
@@ -93,10 +93,10 @@ void thumbstick_mode_cycle_backward(void);
 void thumbstick_init(void);
 
 // Axis-level wrapper to read raw value, do logging and calculate speed
-int16_t thumbstick_get_component(uint8_t pin);
+int8_t thumbstick_get_component(uint8_t pin);
 
 // Get mouse speed
-int8_t thumbstick_get_mouse_speed(int16_t component);
+int8_t thumbstick_get_mouse_speed(int8_t component);
 
 // Fix direction within one of 8 axes (or 4 if 8-axis is disabled)
 thumbstick_direction_t thumbstick_get_discretized_direction(thumbstick_vector_t vector, bool eightAxis);

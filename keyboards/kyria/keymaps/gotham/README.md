@@ -38,17 +38,17 @@ A PSP 2000 thumbstick is attached to the right half.
 
 More tunables are described here. Values like deadzone threshold are hardware-specific. The theoretical range for analog readings is [0, 1023], but emperical readings don't extend the entire range. To find the right values, turn on CONSOLE_ENABLE in rules.mk and THUMBSTICK_DEBUG in config.h to look at the raw values from the pins using hid_listen (or QMK Toolbox).
 
-- __THUMBSTICK_DEAD_ZONE 90:__ Values below this are ignored (deadzone).
-- __THUMBSTICK_FINE_ZONE 180:__  Values below this enable fine movement.
+- __THUMBSTICK_DEAD_ZONE:__ Values below this are ignored (deadzone).
+- __THUMBSTICK_FINE_ZONE:__  Values below this enable fine movement.
 
 - __THUMBSTICK_MODE <mode>:__ One of THUMBSTICK_MODE_MOUSE, THUMBSTICK_MODE_ARROWS and THUMBSTICK_MODE_SCROLL. This is just the default mode, it can be changed by calling ```thumbstick_mode_cycle_forward()``` and ```thumbstick_mode_cycle_backward()``` within code.
 
-- __THUMBSTICK_SPEED 127:__ Cursor speed in THUMBSTICK_MODE_MOUSE.
-- __THUMBSTICK_FINE_SPEED 64:__ Fine cursor speed in THUMBSTICK_MODE_MOUSE (kicks in when slightly nudging the thumbstick).
+- __THUMBSTICK_SPEED:__ Cursor speed in THUMBSTICK_MODE_MOUSE, automatically limited to 127.
+- __THUMBSTICK_FINE_SPEED:__ Fine cursor speed in THUMBSTICK_MODE_MOUSE (kicks in when slightly nudging the thumbstick). Automatically limited to 127.
 - __THUMBSTICK_SCROLL_SPEED 1:__ Scrolling speed in THUMBSTICK_MODE_SCROLL.
 
 - __THUMBSTICK_EIGHT_AXIS true:__ 8-axis toggle for ARROW and SCROLL modes. Disable to fall back to 4 axes (think D-pads vs analog stick).
-- __THUMBSTICK_AXIS_SEPARATION 0.5f:__ Float value between 0 and 1, used to discretize the circular range into distinct zones for 8-axis. Imagine the top-right quadrant on a graph, and picture the diagonal. This value indicates the angular "distance" from the diagonal to either axis. Moving from the diagonal to each of the axes, this value changes from 0 to 1. So, a value of 0.5 will "sweep" from the center to half-way towards each axis, creating a zone across the diagonal. Smaller values make narrower diagonal zones, and vice versa.
+- __THUMBSTICK_AXIS_SEPARATION:__ Range is [0 - 127], used to discretize the circular range into distinct zones for 8-axis. Imagine the top-right quadrant on a graph, and picture the diagonal. This value indicates the angular "distance" from the diagonal to either axis. Moving from the diagonal to each of the axes, this value changes from 0 to 127. So, a value of 64 will "sweep" from the diagonal to half-way towards each axis, creating a zone across the diagonal. Smaller values make narrower diagonal zones, and vice versa.
 
 #### Thanks
 

@@ -15,7 +15,7 @@ void thumbstick_init(void) {
 }
 
 // Axis-level wrapper to read raw value and return signed distanced from center
-int16_t thumbstick_get_component(uint8_t pin) {
+int8_t thumbstick_get_component(uint8_t pin) {
     int16_t value = analogReadPin(pin);  // range of [0 to 1023]
 #if defined THUMBSTICK_DEBUG
     if (pin == THUMBSTICK_PIN_X) {
@@ -26,7 +26,7 @@ int16_t thumbstick_get_component(uint8_t pin) {
         distY = value - THUMBSTICK_RANGE_CENTER;
     }
 #endif
-    return value - THUMBSTICK_RANGE_CENTER;
+    return (value - THUMBSTICK_RANGE_CENTER) / 4;
 }
 
 thumbstick_mode_t   thumbstick_mode_get(void) { return thumbstick_state.config.mode; }
@@ -38,18 +38,18 @@ void thumbstick_mode_cycle_forward(void) { thumbstick_mode_set(addmod8(thumbstic
 void thumbstick_mode_cycle_backward(void) { thumbstick_mode_set(submod8(thumbstick_mode_get(), 1, _THUMBSTICK_MODE_LAST)); }
 
 // Get mouse speed
-int8_t thumbstick_get_mouse_speed(int16_t component) {
-    uint16_t distance = abs(component);
-    uint16_t speed    = ((distance > THUMBSTICK_FINE_ZONE) * THUMBSTICK_SPEED) + (((distance <= THUMBSTICK_FINE_ZONE) && (distance > THUMBSTICK_DEAD_ZONE)) * THUMBSTICK_FINE_SPEED);
-    return ((component < 0) * -1 + (component > 0)) * lerp16by16(0, speed, distance * 128);
+int8_t thumbstick_get_mouse_speed(int8_t component) {
+    uint8_t distance = abs(component);
+    uint8_t speed    = ((distance > THUMBSTICK_FINE_ZONE) * THUMBSTICK_SPEED) + (((distance <= THUMBSTICK_FINE_ZONE) && (distance > THUMBSTICK_DEAD_ZONE)) * THUMBSTICK_FINE_SPEED);
+    return ((component < 0) * -1 + (component > 0)) * lerp8by8(0, speed, distance * 2);
 }
 
 // Fix direction within one of 8 axes (or 4 if 8-axis is disabled)
 thumbstick_direction_t thumbstick_get_discretized_direction(thumbstick_vector_t vector, bool eightAxis) {
     thumbstick_direction_t direction;
-    uint16_t               absX                = abs(vector.x);
-    uint16_t               absY                = abs(vector.y);
-    uint16_t               maxComponent        = (absX * (absX > absY)) + (absY * (absX <= absY));
+    uint8_t                absX                = abs(vector.x);
+    uint8_t                absY                = abs(vector.y);
+    uint8_t                maxComponent        = (absX * (absX > absY)) + (absY * (absX <= absY));
     bool                   insideDeadZone      = (maxComponent <= THUMBSTICK_DEAD_ZONE);
     bool                   outsideDiagonalZone = (abs(absX - absY) >= THUMBSTICK_AXIS_SEPARATION);
     bool                   dominantY           = (absY >= absX);
