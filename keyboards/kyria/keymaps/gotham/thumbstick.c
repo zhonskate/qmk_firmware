@@ -65,19 +65,17 @@ thumbstick_direction_t thumbstick_get_discretized_direction(thumbstick_vector_t 
 }
 
 void thumbstick_read_vectors(void) {
-    if (timer_elapsed(thumbstickTimer) > THUMBSTICK_TIMEOUT) {
-        thumbstickTimer = timer_read();
+    thumbstickTimer = timer_read();
 #ifndef THUMBSTICK_FLIP_X
-        thumbstick_state.vector.x = thumbstick_get_component(THUMBSTICK_PIN_X);
+    thumbstick_state.vector.x = thumbstick_get_component(THUMBSTICK_PIN_X);
 #else
-        thumbstick_state.vector.x = -thumbstick_get_component(THUMBSTICK_PIN_X);
+    thumbstick_state.vector.x = -thumbstick_get_component(THUMBSTICK_PIN_X);
 #endif
 #ifndef THUMBSTICK_FLIP_Y
-        thumbstick_state.vector.y = thumbstick_get_component(THUMBSTICK_PIN_Y);
+    thumbstick_state.vector.y = thumbstick_get_component(THUMBSTICK_PIN_Y);
 #else
-        thumbstick_state.vector.y = -thumbstick_get_component(THUMBSTICK_PIN_Y);
+    thumbstick_state.vector.y = -thumbstick_get_component(THUMBSTICK_PIN_Y);
 #endif
-    }
 }
 
 void thumbstick_calculate_state(void) {
@@ -159,16 +157,18 @@ void update_keycode_status(uint16_t keycode, bool last, bool current) {
 void pointing_device_init(void) { thumbstick_init(); }
 
 void pointing_device_task(void) {
-    report_mouse_t report = pointing_device_get_report();
+    if (timer_elapsed(thumbstickTimer) > THUMBSTICK_TIMEOUT) {
+        report_mouse_t report = pointing_device_get_report();
 
-    // Only read pins on the right half where the thunmbstick is attached, and set state
-    if (!isLeftHand) {
-        thumbstick_read_vectors();
+        // Only read pins on the right half where the thunmbstick is attached, and set state
+        if (!isLeftHand) {
+            thumbstick_read_vectors();
+        }
+        // Calculate and process thumbstick state (if master half doesn't have the thumbstick, the custom transport will bring the vectors over)
+        thumbstick_calculate_state();
+        thumbstick_process_state(&report);
+
+        pointing_device_set_report(report);
+        pointing_device_send();
     }
-    // Calculate and process thumbstick state (if master half doesn't have the thumbstick, the custom transport will bring the vectors over)
-    thumbstick_calculate_state();
-    thumbstick_process_state(&report);
-
-    pointing_device_set_report(report);
-    pointing_device_send();
 }

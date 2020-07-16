@@ -3,7 +3,7 @@ MOUSEKEY_ENABLE        = no
 ENCODER_ENABLE         = yes
 RGBLIGHT_ENABLE        = yes
 OLED_DRIVER_ENABLE     = yes
-THUMBSTICK_ENABLE  	   = no
+THUMBSTICK_ENABLE  	   = yes
 SPLIT_TRANSPORT        = custom
 OLED_ANIMATIONS_ENABLE = yes
 
