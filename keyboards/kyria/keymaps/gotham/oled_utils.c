@@ -105,11 +105,9 @@ void render_status(void) {
         render_encoder(encoder_right_mode);
 #endif
 #ifdef THUMBSTICK_ENABLE
-        if (!isLeftHand) {
-            // Thumbstick state
-            oled_write_P(PSTR("Joystick: "), false);
-            render_thumbstick(thumbstick_state.config.mode);
-        }
+        // Thumbstick state
+        oled_write_P(PSTR("Joystick: "), false);
+        render_thumbstick(thumbstick_state.config.mode);
 #endif
         // Host Keyboard LED Status
         led_t led_state = host_keyboard_led_state();
