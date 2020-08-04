@@ -108,6 +108,9 @@ void render_encoders(void);
 #endif
 #ifdef THUMBSTICK_ENABLE
 void render_thumbstick(void);
+#    ifdef THUMBSTICK_DEBUG
+void render_thumbstick_debug(void);
+#    endif
 #endif
 
 void render_status(void);

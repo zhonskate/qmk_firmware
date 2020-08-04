@@ -160,6 +160,26 @@ void render_thumbstick(void) {
     oled_write_P(PSTR(OLED_STR_THUMBSTICK_MODE), false);
     oled_write_ln_P(thumbstick_mode_names[thumbstick_mode_get()], false);
 }
+#    ifdef THUMBSTICK_DEBUG
+uint8_t tx = 0;
+uint8_t ty = 0;
+void render_thumbstick_debug(void) {
+    uint16_t x = 1024 - get_raw_x();
+    uint16_t y = get_raw_y();
+    char ssd[OLED_CHAR_COUNT] = "";
+    snprintf(ssd, OLED_CHAR_COUNT, "X: %d; Y: %d", x, y);
+    oled_write_ln(ssd, false);
+    uint8_t xx = scale16by8(x, 15);
+    uint8_t yy = scale16by8(y, 15);
+    if (xx != tx || yy != ty) {
+        oled_write_pixel(tx + 32, ty + 1, false);
+        // for(uint8_t i = 128; i < (128 * 7); i++) { oled_write_raw_byte(0, i); }
+        tx = xx;
+        ty = yy;
+        oled_write_pixel(tx + 32, ty + 1, true);
+    }
+}
+#    endif
 #endif
 
 __attribute__((weak)) void render_status_main(void) {
@@ -190,11 +210,19 @@ void render_status(void) {
     if (is_master)
 #endif
     {
+#if defined(THUMBSTICK_ENABLE) && defined(THUMBSTICK_DEBUG)
+        render_thumbstick_debug();
+#else
         render_status_main();
+#endif
     }
 #ifdef SPLIT_KEYBOARD
     else {
+#if defined(THUMBSTICK_ENABLE) && defined(THUMBSTICK_DEBUG)
+        render_status_main();
+#else
         render_status_secondary();
+#endif
     }
 #endif
 }
